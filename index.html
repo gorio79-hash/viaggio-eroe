@@ -1,0 +1,1158 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<!--
+  Il Viaggio dell'Eroe — laboratorio di narrazione di gruppo
+  Un progetto di Dott. Magri Gregorio — Psicologo/Psicoterapeuta
+  Cooperativa/Istituto Minotauro — Milano — © 2026 — Tutti i diritti riservati
+-->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>Il Viaggio dell'Eroe</title>
+<style>
+:root{
+  --carta:#f7f2e8; --carta2:#efe7d6; --inchiostro:#2f2a24; --tenue:#857a6b;
+  --arancio:#D98A3D; --arancio-sc:#b86d25; --blu:#4E6EA8; --blu-sc:#3a5689;
+  --giallo:#fff1a8; --verde:#5f8f5a;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--carta);color:var(--inchiostro);font-family:var(--serif);font-size:18px;line-height:1.45;-webkit-text-size-adjust:100%}
+body{min-height:100vh;padding-bottom:10px;
+  background-image:repeating-linear-gradient(transparent 0 31px, rgba(78,110,168,.07) 31px 32px);}
+button{font-family:var(--serif);font-size:17px;cursor:pointer;color:inherit;touch-action:manipulation}
+.nascosto{display:none!important}
+
+/* ---------- barra in alto ---------- */
+#barra{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;
+  padding:10px 16px;background:rgba(247,242,232,.95);border-bottom:1px solid #e0d6c2}
+#barra .tit{font-size:17px;letter-spacing:.04em}
+#barra .tit b{color:var(--arancio-sc)}
+#barra button{background:none;border:1px solid #cdbfa5;border-radius:10px;padding:8px 14px;margin-left:8px}
+
+.schermata{max-width:860px;margin:0 auto;padding:22px 18px}
+h1{font-size:34px;font-weight:normal;letter-spacing:.02em;margin-bottom:6px}
+h2{font-size:24px;font-weight:normal;margin:6px 0 10px}
+h3{font-size:19px;font-weight:normal;color:var(--tenue);margin:22px 0 10px;letter-spacing:.03em}
+p{margin-bottom:10px}
+.piccolo{font-size:15px;color:var(--tenue)}
+
+.bott{display:inline-block;border:2px solid var(--inchiostro);background:#fff;border-radius:14px;padding:13px 22px;margin:6px 6px 6px 0;min-height:52px}
+.bott.pieno{background:var(--inchiostro);color:var(--carta)}
+.bott.arancio{background:var(--arancio);border-color:var(--arancio-sc);color:#fff}
+.bott.blu{background:var(--blu);border-color:var(--blu-sc);color:#fff}
+.bott:disabled{opacity:.35;cursor:default}
+
+/* ---------- apertura ---------- */
+#s-intro{text-align:center;padding-top:40px}
+.intro-carte{display:flex;justify-content:center;gap:10px;margin:18px 0 26px}
+.intro-carte .mini{width:58px;height:84px;border-radius:9px;display:flex;align-items:center;justify-content:center;
+  color:#fff;font-size:24px;box-shadow:0 3px 8px rgba(0,0,0,.15)}
+.intro-carte .mini:nth-child(odd){transform:rotate(-6deg)} .intro-carte .mini:nth-child(even){transform:rotate(5deg)}
+.intro-testo{max-width:560px;margin:0 auto 18px;font-size:19px}
+.avvertenza{max-width:560px;margin:0 auto 22px;border:2px dashed var(--arancio);border-radius:14px;padding:14px 18px;
+  background:#fff8ee;font-size:16px;text-align:left}
+.avvertenza b{color:var(--arancio-sc)}
+
+/* ---------- tessere ---------- */
+.tessere{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:8px}
+.tessera{background:#fff;border:2px solid #d8ccb5;border-radius:16px;padding:14px 10px;text-align:center;min-height:110px;
+  transition:transform .15s,border-color .15s,box-shadow .15s}
+.tessera .em{font-size:34px;display:block;margin-bottom:4px}
+.tessera .t{font-size:17px;display:block}
+.tessera .d{font-size:13px;color:var(--tenue);display:block;margin-top:2px}
+.tessera.sel{border-color:var(--arancio);box-shadow:0 0 0 3px rgba(217,138,61,.25);transform:translateY(-2px);background:#fffaf2}
+input[type=text],textarea{font-family:var(--serif);font-size:18px;width:100%;padding:12px 14px;border:2px solid #d8ccb5;border-radius:12px;background:#fff;color:var(--inchiostro)}
+input[type=text]:focus,textarea:focus{outline:none;border-color:var(--blu)}
+
+/* ---------- mappa ---------- */
+.mappa{position:relative;width:100%;max-width:600px;margin:6px auto 0;aspect-ratio:600/540}
+.mappa svg{position:absolute;inset:0;width:100%;height:100%}
+.nodo{position:absolute;transform:translate(-50%,-50%);width:15%;aspect-ratio:1;border-radius:50%;
+  border:3px solid #cbbfa9;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  font-size:13px;color:var(--tenue);padding:0;transition:background .3s,border-color .3s}
+.nodo .sig{font-size:24px;line-height:1;color:var(--tenue)}
+.nodo .nm{font-size:11px;line-height:1.1;margin-top:3px;text-align:center;padding:0 4px}
+.nodo.risorsa{border-radius:12px;width:12%;aspect-ratio:.72}
+.nodo.bloccato{opacity:.45}
+.nodo.risorsa.libero{border-color:var(--blu);color:var(--blu-sc)} .nodo.risorsa.libero .sig{color:var(--blu-sc)}
+.idea{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;background:var(--giallo);padding:8px 10px;border-radius:4px;margin:6px 0;font-size:16px}
+.idea button{background:none;border:none;font-size:17px;opacity:.6;padding:0 4px}
+.nodo.disp{border-color:var(--arancio);color:var(--arancio-sc);animation:pulsa 1.6s ease-in-out infinite}
+.nodo.disp .sig{color:var(--arancio-sc)}
+.nodo.risorsa.disp{border-color:var(--blu);color:var(--blu-sc)} .nodo.risorsa.disp .sig{color:var(--blu-sc)}
+.nodo.fatto{background:var(--arancio);border-color:var(--arancio-sc);color:#fff}
+.nodo.fatto .sig{color:#fff}
+.nodo.risorsa.fatto{background:var(--blu);border-color:var(--blu-sc)}
+@keyframes pulsa{0%,100%{box-shadow:0 0 0 0 rgba(217,138,61,.45)}50%{box-shadow:0 0 0 12px rgba(217,138,61,0)}}
+.pedina{position:absolute;transform:translate(-50%,-50%);font-size:34px;transition:left 1.1s ease-in-out,top 1.1s ease-in-out;
+  filter:drop-shadow(0 3px 3px rgba(0,0,0,.25));pointer-events:none;z-index:3}
+.tavolo-testa{text-align:center}
+.tavolo-testa .eroe{font-size:15px;color:var(--tenue)}
+.tavolo-piede{text-align:center;margin-top:8px}
+
+/* ---------- carta ---------- */
+.carta-zona{display:flex;justify-content:center;margin:4px 0 14px}
+.carta{width:min(330px,82vw);aspect-ratio:1.55;perspective:1100px;cursor:pointer}
+.carta-in{position:relative;width:100%;height:100%;transition:transform .8s cubic-bezier(.4,.2,.2,1);transform-style:preserve-3d}
+.carta.girata .carta-in{transform:rotateY(180deg)}
+.faccia{position:absolute;inset:0;border-radius:14px;backface-visibility:hidden;-webkit-backface-visibility:hidden;
+  box-shadow:0 6px 18px rgba(0,0,0,.18);overflow:hidden;display:flex;flex-direction:column}
+.faccia .fascia{display:flex;justify-content:space-between;align-items:center;font-size:10px;letter-spacing:.14em;
+  padding:6px 10px;font-family:Helvetica,Arial,sans-serif;font-weight:bold}
+.faccia .centro{flex:1;display:flex;align-items:center;justify-content:center;gap:10px}
+.faccia .nome{text-align:center;font-size:19px;padding-bottom:4px}
+.faccia .sotto{text-align:center;font-size:12px;font-style:italic;padding-bottom:10px;opacity:.9}
+.fronte{background:var(--carta);border:3px solid var(--c);color:var(--inchiostro)}
+.fronte .fascia{background:var(--c);color:#fff}
+.fronte .centro svg{width:64px;height:64px}
+.retro{transform:rotateY(180deg);background:var(--c);color:#fff}
+.retro::after{content:"";position:absolute;inset:8px;border:1.5px solid rgba(255,255,255,.7);border-radius:10px;pointer-events:none}
+.retro .fascia{color:#fff;border-bottom:1.5px solid rgba(255,255,255,.7);margin:8px 8px 0}
+.retro .sigla{font-size:64px;line-height:1}
+.retro .centro svg{width:44px;height:44px}
+
+.pannello{background:#fff;border:2px solid #e0d6c2;border-radius:18px;padding:16px 18px 18px;box-shadow:0 2px 0 #e9e0cd}
+.pann-testa{display:flex;flex-wrap:wrap;align-items:center;gap:8px;justify-content:space-between}
+.pill{display:inline-block;border-radius:30px;padding:5px 14px;font-size:14px;letter-spacing:.04em;color:#fff}
+.pill.a{background:var(--inchiostro)} .pill.b{background:var(--c)}
+.strumenti{display:flex;align-items:center;gap:8px}
+.lanterna{border:1.5px solid #e2c27a;background:#fff8e1;border-radius:30px;padding:6px 14px;font-size:15px}
+.lanterna.accesa{background:#ffe9a3}
+.cless{display:flex;align-items:center;gap:5px;font-size:14px;color:var(--tenue)}
+.cless svg{width:26px;height:26px}
+.domanda{font-size:23px;line-height:1.3;margin:14px 0 6px}
+.intro-tappa{text-align:center;font-style:italic;color:var(--tenue);max-width:600px;margin:0 auto 14px}
+.promemoria{background:var(--carta2);border-radius:12px;padding:8px 12px;margin:8px 0 4px;font-size:15px}
+.promemoria summary{color:var(--tenue);cursor:pointer}
+.promemoria ul{margin:6px 0 2px 20px}
+.bacheca{display:flex;flex-wrap:wrap;gap:12px;min-height:40px;margin:14px 0}
+.bacheca .vuota{color:var(--tenue);font-style:italic;font-size:15px}
+.foglietto{background:var(--giallo);width:190px;min-height:110px;padding:12px 12px 6px;border-radius:2px;
+  box-shadow:0 4px 8px rgba(0,0,0,.13);transform:rotate(var(--r));display:flex;flex-direction:column;
+  font-size:16px;line-height:1.3}
+.foglietto.nuovo{animation:attacca .35s ease-out}
+.foglietto.b{background:#e3ecfb}
+.emergenza{border:3px solid #c0392b;border-radius:18px;padding:14px 16px 10px;margin:16px 0;text-align:center;
+  background:repeating-linear-gradient(45deg,#fff 0 16px,#fdecea 16px 32px)}
+.em-tit{display:inline-block;background:#c0392b;color:#fff;font-family:Helvetica,Arial,sans-serif;font-weight:bold;letter-spacing:.14em;
+  font-size:13px;text-transform:uppercase;padding:4px 12px;border-radius:6px;margin-bottom:12px}
+.bottone-rosso{width:132px;height:132px;border-radius:50%;border:7px solid #e6e0d4;color:#fff;font-family:Helvetica,Arial,sans-serif;
+  font-weight:bold;font-size:15px;letter-spacing:.06em;line-height:1.25;
+  background:radial-gradient(circle at 35% 30%,#ff7a6b,#d0392b 55%,#8e2318);
+  box-shadow:0 7px 0 #7a1d14,0 12px 20px rgba(0,0,0,.28);transition:transform .08s,box-shadow .08s;margin-bottom:12px}
+.bottone-rosso:active{transform:translateY(5px);box-shadow:0 2px 0 #7a1d14,0 4px 8px rgba(0,0,0,.25)}
+.bott.rosso{background:#c0392b;border-color:#8e2318;color:#fff}
+#testoPrompt{height:260px;font-size:14px;margin:8px 0}
+.interr{display:flex;align-items:center;gap:10px;background:#fff;border:2px solid #e0d6c2;border-radius:12px;padding:10px 14px;margin:6px 0 14px;font-size:16px}
+.interr input{width:24px;height:24px}
+.foglietto.stella{box-shadow:0 0 0 3px var(--arancio),0 4px 8px rgba(0,0,0,.13)}
+.foglietto .tx{flex:1;word-wrap:break-word}
+.fog-bot{display:flex;justify-content:flex-end;gap:2px;margin-top:6px}
+.fog-bot button{background:none;border:none;font-size:18px;padding:4px 7px;opacity:.6}
+.fog-bot button.st-on{opacity:1}
+@keyframes attacca{from{transform:rotate(var(--r)) translateY(-14px) scale(1.06);opacity:0}to{transform:rotate(var(--r));opacity:1}}
+.scrivi{display:flex;gap:10px;align-items:stretch}
+.scrivi textarea{resize:none;height:64px}
+.scrivi button{flex:0 0 auto;border:2px solid var(--inchiostro);background:var(--inchiostro);color:var(--carta);border-radius:12px;padding:0 18px}
+.azioni{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;margin-top:14px;gap:8px}
+.suggerimento{font-size:14px;color:var(--tenue);font-style:italic;margin-top:4px}
+
+/* ---------- popup ---------- */
+#velo{position:fixed;inset:0;background:rgba(30,24,16,.55);z-index:50;display:flex;align-items:center;justify-content:center;padding:18px}
+#popup{background:var(--carta);border-radius:18px;max-width:560px;width:100%;max-height:88vh;overflow:auto;padding:22px 22px 18px;
+  box-shadow:0 12px 40px rgba(0,0,0,.35)}
+#popup h2{margin-top:0}
+.esempio{background:#fff;border-left:4px solid var(--c,#999);padding:8px 12px;margin:8px 0;font-size:16px}
+.esempio .et{font-size:13px;color:var(--tenue);display:block}
+.esempio.qui{background:#fffaf0}
+
+/* ---------- scheda ---------- */
+.sch-testa{background:#fff;border:2px solid #e0d6c2;border-radius:14px;padding:12px 16px;margin-bottom:14px;font-size:16px}
+.sch-carta{background:#fff;border:2px solid #e0d6c2;border-left:10px solid var(--c);border-radius:12px;padding:10px 14px;margin-bottom:12px;page-break-inside:avoid}
+.sch-carta h4{font-weight:normal;font-size:19px;margin-bottom:6px}
+.sch-carta h4 .sg{display:inline-block;min-width:38px;text-align:center;background:var(--c);color:#fff;border-radius:6px;padding:0 6px;margin-right:6px;font-size:16px}
+.sch-col{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.sch-col .et{font-size:13px;color:var(--tenue);letter-spacing:.05em}
+.sch-col ul{margin-left:18px;font-size:16px}
+.sch-col li.st{font-weight:bold}
+#testoScheda{height:140px;font-size:14px;margin-top:8px}
+.toast{position:fixed;left:50%;bottom:80px;transform:translateX(-50%);background:var(--inchiostro);color:var(--carta);
+  padding:10px 18px;border-radius:30px;z-index:60;font-size:16px}
+
+/* ---------- diario ---------- */
+.diario{background:#fff;border:2px dashed var(--blu);border-radius:16px;padding:12px 14px;margin:0 0 18px}
+.diario-tit{font-size:19px;color:var(--blu-sc)}
+.diario-bott{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:8px 0 6px}
+.diario-bott button{background:#fff;border:2px solid #d8ccb5;border-radius:14px;padding:8px 4px;min-height:84px;font-size:15px;line-height:1.2}
+.diario-bott .em{font-size:26px;display:block;margin-bottom:2px}
+.momento{background:#fff;border-radius:10px;border:1px solid #e0d6c2;padding:8px 12px;margin-bottom:8px;font-size:16px}
+.momento .ora{color:var(--tenue);font-size:14px;margin-right:6px}
+
+/* ---------- specchio ---------- */
+.barra-t{display:flex;align-items:center;gap:10px;margin:5px 0;font-size:15px}
+.barra-t .nm{width:130px;flex:0 0 130px}
+.barra-t .bb{height:16px;border-radius:8px;background:var(--c)}
+.barra-t .vv{color:var(--tenue);font-size:14px;white-space:nowrap}
+.spunto{background:#fff;border-left:5px solid var(--arancio);border-radius:6px;padding:10px 14px;margin:10px 0;font-size:18px}
+.spunto.fisso{border-left-color:var(--blu)}
+
+/* ---------- crediti ---------- */
+#crediti{display:block;margin:36px auto 14px;background:none;border:none;padding:6px 10px;
+  font-size:11px;letter-spacing:.04em;color:var(--tenue);opacity:.55}
+
+
+@media (max-width:600px){
+  .sch-col{grid-template-columns:1fr}
+  .foglietto{width:calc(50% - 6px)}
+  .diario-bott{grid-template-columns:1fr 1fr}
+  h1{font-size:28px}
+  .nodo .sig{font-size:17px} .nodo .nm{font-size:8px} .pedina{font-size:24px}
+}
+@media print{
+  body{background:#fff;padding:0}
+  #barra,#crediti,.no-stampa,#velo{display:none!important}
+  .schermata{display:none!important}
+  #s-scheda{display:block!important;padding:0}
+  .sch-carta,.sch-testa{border-color:#999}
+}
+</style>
+</head>
+<body>
+
+<div id="barra" class="nascosto">
+  <div class="tit" onclick="tocchiConduttore()">Il Viaggio <b>dell'Eroe</b></div>
+  <div><button id="btTacc" onclick="apriTaccuino()">📒 Taccuino</button><button id="btMappa" onclick="mostra('s-tavolo')">← Mappa</button></div>
+</div>
+
+<!-- ====================== APERTURA ====================== -->
+<div class="schermata" id="s-intro">
+  <div class="intro-carte" id="introCarte"></div>
+  <h1 onclick="tocchiConduttore()">Il Viaggio dell'Eroe</h1>
+  <p class="intro-testo">Siete arrivati all'ultimo momento di un percorso fatto insieme. Ora il vostro compito è trasformarlo in una storia.<br>
+  Carta dopo carta, ricordate che cosa è successo davvero e decidete come lo racconterà la storia.<br>
+  <b>Parlatevi prima di scrivere: la storia è di tutti.</b></p>
+  <div class="avvertenza"><b>Prima di cominciare.</b> Quello che scrivete potrà finire in un'intelligenza artificiale. Non usate nomi veri, nomi di aziende o dati personali. Parlate di situazioni, non di persone: nella storia userete nomi di fantasia.</div>
+  <div id="introBottoni"></div>
+</div>
+
+<!-- ====================== PREPARAZIONE ====================== -->
+<div class="schermata nascosto" id="s-prep">
+  <h1>Prima di partire</h1>
+  <p class="piccolo">Decidete insieme. Potrete cambiare idea più avanti.</p>
+  <h3>Come si chiama il vostro gruppo? <span class="piccolo">(facoltativo)</span></h3>
+  <input type="text" id="inGruppo" maxlength="40" placeholder="Per esempio: I Nebbiosi" oninput="S.gruppo=this.value;salva()">
+  <h3>Dove si svolge la storia?</h3>
+  <div class="tessere" id="tesAmb"></div>
+  <input type="text" id="inAmbAltro" class="nascosto" maxlength="80" placeholder="Scrivete dove" oninput="S.ambAltro=this.value;salva();aggPrep()">
+  <h3>Chi è l'eroe?</h3>
+  <div class="tessere" id="tesEroe"></div>
+  <h3>Come si chiama? <span class="piccolo">(uno o più nomi di fantasia)</span></h3>
+  <input type="text" id="inNomi" maxlength="120" placeholder="Per esempio: Ada, Brio e Corallo" oninput="S.nomi=this.value;salva();aggPrep()">
+  <div style="margin-top:22px;text-align:right"><button class="bott pieno" id="btPrep" onclick="mostra('s-tavolo')" disabled>Al tavolo da gioco →</button></div>
+</div>
+
+<!-- ====================== TAVOLO ====================== -->
+<div class="schermata nascosto" id="s-tavolo">
+  <div class="tavolo-testa">
+    <h2 id="tavTitolo">Il viaggio</h2>
+    <div class="eroe"><span id="tavEroe"></span> · <a href="#" onclick="mostra('s-prep');return false" style="color:var(--tenue)">cambia</a></div>
+  </div>
+  <div class="mappa" id="mappa"></div>
+  <div class="tavolo-piede" id="tavPiede"></div>
+</div>
+
+<!-- ====================== CARTA ====================== -->
+<div class="schermata nascosto" id="s-carta">
+  <div class="carta-zona"><div class="carta" id="carta" onclick="gira()"></div></div>
+  <p class="intro-tappa" id="introTappa"></p>
+  <div class="pannello" id="pannello"></div>
+</div>
+
+<!-- ====================== FORMA ====================== -->
+<div class="schermata nascosto" id="s-forma">
+  <h1>Che forma avrà la vostra storia?</h1>
+  <p class="piccolo">Il cerchio si è chiuso. Ora decidete come la racconterete.</p>
+  <h3>Formato</h3><div class="tessere" id="tesFormato"></div>
+  <input type="text" id="inFormatoAltro" class="nascosto" maxlength="80" placeholder="Scrivete quale formato" oninput="S.forma.formatoAltro=this.value;salva();aggForma()">
+  <h3>Per chi è</h3><div class="tessere" id="tesPer"></div>
+  <input type="text" id="inPerAltro" class="nascosto" maxlength="80" placeholder="Scrivete per chi è" oninput="S.forma.perAltro=this.value;salva();aggForma()">
+  <h3>Tono</h3><div class="tessere" id="tesTono"></div>
+  <input type="text" id="inTonoAltro" class="nascosto" maxlength="80" placeholder="Scrivete quale tono" oninput="S.forma.tonoAltro=this.value;salva();aggForma()">
+  <div class="azioni" style="margin-top:22px"><button class="bott" onclick="mostra('s-tavolo')">← Mappa</button>
+    <button class="bott pieno" id="btForma" onclick="mostra('s-scheda')" disabled>La vostra scheda →</button></div>
+</div>
+
+<!-- ====================== SCHEDA ====================== -->
+<div class="schermata nascosto" id="s-scheda">
+  <h1>La vostra scheda</h1>
+  <p class="no-stampa">Questa è la vostra storia in pezzi. Ora sta a voi raccontarla con l'intelligenza artificiale: decidete voi come.</p>
+  <div class="no-stampa" style="margin:6px 0 14px">
+    <button class="bott pieno" onclick="copiaScheda()">Copia il testo</button>
+    <button class="bott" onclick="salvaScheda()">Salva file</button>
+    <button class="bott" onclick="window.print()">Stampa</button>
+  </div>
+  <div class="diario no-stampa">
+    <div class="diario-tit">Diario di bordo</div>
+    <p class="piccolo">Mentre scrivete con l'IA, quando succede qualcosa di importante toccate un pulsante.</p>
+    <div class="diario-bott" id="diarioBott"></div>
+    <div id="diarioLista"></div>
+  </div>
+  <div id="schedaVista"></div>
+  <div class="emergenza no-stampa" id="promptBox">
+    <div class="em-tit">In caso di emergenza</div><br>
+    <button class="bottone-rosso" onclick="chiediPrompt()" aria-label="Prompt automatico">PROMPT<br>AUTOMATICO</button>
+    <p class="piccolo">Poco tempo? Volete vedere che cosa farebbe l'IA da sola con il vostro materiale?</p>
+  </div>
+  <div class="no-stampa">
+    <p class="piccolo" style="margin-top:14px">Se i pulsanti non funzionano, tenete premuto nel riquadro qui sotto, scegliete «Seleziona tutto» e poi «Copia».</p>
+    <textarea id="testoScheda" readonly></textarea>
+    <div style="margin-top:18px"><button class="bott" onclick="mostra('s-forma')">← Scelte di forma</button></div>
+  </div>
+</div>
+
+<!-- ====================== SPECCHIO ====================== -->
+<div class="schermata nascosto" id="s-specchio">
+  <div class="pill a" style="margin-bottom:8px">Per chi conduce</div>
+  <h1>Specchio del viaggio</h1>
+  <p class="piccolo">Come questo gruppo ha costruito la storia. Spunti per la condivisione: domande, non giudizi.</p>
+  <div id="specchioVista"></div>
+  <div class="azioni" style="margin-top:22px">
+    <button class="bott pieno" onclick="esciConduttore()">← Torna al gioco</button>
+    <button class="bott" onclick="chiediRicomincia()">Nuovo gruppo su questo tablet</button>
+  </div>
+</div>
+
+<div id="velo" class="nascosto"><div id="popup"></div></div>
+<button id="crediti" onclick="mostraCrediti()">© 2026 Dott. Magri Gregorio</button>
+
+<script>
+"use strict";
+/* ============================================================
+   CONTENUTI
+   ============================================================ */
+const ARANCIO = "#D98A3D", BLU = "#4E6EA8";
+
+const CARTE = [
+  { id:"mo", tipo:"fase", num:1, sigla:"MO", nome:"Mondo ordinario",
+    intro:"Ogni storia comincia da una vita normale, prima che succeda qualcosa.",
+    a:"Com'eravate all'inizio del percorso, prima di cominciare? Come vi sentivate, che cosa vi aspettavate?",
+    bs:"Chi è l'eroe e com'è la sua vita prima che cominci l'avventura?",
+    bp:"Chi sono gli eroi e com'è la loro vita prima che cominci l'avventura?",
+    l1:"Vi conoscevate già? Eravate curiosi, scettici, stanchi?",
+    ea:"Venivamo da reparti diversi e quasi non ci conoscevamo.",
+    eb:"Cinque marinai di navi diverse sbarcano nello stesso porto, avvolto dalla nebbia." },
+  { id:"h", tipo:"risorsa", sigla:"H", nome:"Eroi",
+    intro:"Un eroe non è perfetto: sa fare qualcosa e gli manca qualcosa. Sono le debolezze a rendere interessante il viaggio.",
+    a:"Su quali vostre capacità sentivate di poter contare? Che cosa temevate potesse mettervi in difficoltà?",
+    bs:"Che cosa sa fare l'eroe, di che cosa ha bisogno, qual è il suo punto debole?",
+    bp:"Che cosa sanno fare gli eroi, di che cosa hanno bisogno, quali sono i loro punti deboli?",
+    l1:"Vale per tutto il gruppo o per qualcuno in particolare?",
+    ea:"Sapevamo organizzarci, ma temevamo di non ascoltarci.",
+    eb:"Sanno leggere le stelle, ma parlano lingue diverse e nessuno vuole cedere il timone." },
+  { id:"al", tipo:"risorsa", sigla:"Al", nome:"Alleati",
+    intro:"Nessun eroe ce la fa da solo. Un alleato può essere una persona, ma anche un oggetto, un luogo, una qualità.",
+    a:"Chi o che cosa pensavate potesse aiutarvi? E chi o che cosa vi ha aiutato davvero?",
+    bs:"Chi aiuta l'eroe, e perché lo fa?",
+    bp:"Chi aiuta gli eroi, e perché lo fa?",
+    l1:"Oltre alle persone: uno strumento, una regola, l'umorismo, la calma di qualcuno.",
+    ea:"Gli aiuti a disposizione e la calma di uno di noi.",
+    eb:"Un vecchio guardiano del faro che risponde solo con domande." },
+  { id:"ne", tipo:"risorsa", sigla:"Ne", nome:"Nemici",
+    intro:"Il nemico non è sempre un cattivo: può essere un ostacolo, una paura, il tempo che scorre.",
+    a:"Che cosa vi ha ostacolato, o temevate potesse ostacolarvi? Pensate a situazioni, non a persone.",
+    bs:"Chi o che cosa si mette contro l'eroe, e perché?",
+    bp:"Chi o che cosa si mette contro gli eroi, e perché?",
+    l1:"L'ostacolo era fuori dal gruppo o dentro di voi? La fretta, il voler avere ragione?",
+    ea:"La fretta e la paura di sbagliare davanti agli altri.",
+    eb:"Una nebbia che si infittisce ogni volta che qualcuno parla sopra un altro." },
+  { id:"pr", tipo:"fase", num:7, sigla:"Pr", nome:"Prove",
+    intro:"Lungo la strada arrivano le prove. Non conta solo superarle: conta come ci si comporta e che cosa si impara.",
+    a:"Quali prove avete affrontato e come vi siete comportati? Che cosa avete imparato strada facendo?",
+    bs:"Quali prove affronta l'eroe, e che cosa impara?",
+    bp:"Quali prove affrontano gli eroi, e che cosa imparano?",
+    l1:"Scegliete due momenti precisi. Che cosa avete cambiato dopo il primo?",
+    ea:"All'inizio ognuno andava per conto suo, poi abbiamo letto gli indizi ad alta voce.",
+    eb:"Sul ponte di corda cadono tre volte; al quarto tentativo contano insieme i passi." },
+  { id:"n", tipo:"fase", num:9, sigla:"N", nome:"Scende la notte",
+    intro:"Arriva il momento più buio, quello in cui sembra di non farcela.",
+    a:"Qual è stato il momento più difficile? Come ne siete usciti?",
+    bs:"Qual è la prova decisiva dell'eroe, e come si prepara ad affrontarla?",
+    bp:"Qual è la prova decisiva degli eroi, e come si preparano ad affrontarla?",
+    l1:"C'è stato un attimo in cui avete pensato di arrendervi? Che cosa vi ha fatto ripartire?",
+    ea:"Mancavano pochi minuti; ci siamo fermati e ognuno ha detto che cosa aveva visto.",
+    eb:"Il faro si spegne. Al buio i marinai si siedono in cerchio e ricompongono la rotta." },
+  { id:"e", tipo:"fase", num:11, sigla:"E", nome:"Esito",
+    intro:"Dopo la prova l'eroe ottiene qualcosa, e non è più quello di prima.",
+    a:"Che cosa vi portate a casa da questa esperienza?",
+    bs:"Che cosa conquista l'eroe, e in che cosa è cambiato?",
+    bp:"Che cosa conquistano gli eroi, e in che cosa sono cambiati?",
+    l1:"Non solo il risultato: un'idea, una frase, un modo di lavorare insieme.",
+    ea:"Fermarci un minuto ci ha fatto andare più veloci.",
+    eb:"Trovano la rotta e una mappa che si può leggere solo in cinque." },
+  { id:"c", tipo:"fase", num:14, sigla:"C", nome:"Conclusione",
+    intro:"La storia finisce, ma le sue conseguenze continuano.",
+    a:"Questa esperienza potrà avere effetti anche dopo, nel vostro lavoro o nel vostro gruppo? Quali?",
+    bs:"Come finisce la storia? Che cosa cambia nel mondo dell'eroe, al suo ritorno?",
+    bp:"Come finisce la storia? Che cosa cambia nel mondo degli eroi, al loro ritorno?",
+    l1:"Domani, che cosa potrebbe essere diverso? Che cosa non vorreste dimenticare?",
+    ea:"Proveremo a fare una riunione breve prima di dividerci i compiti.",
+    eb:"Ognuno torna alla sua nave con un pezzo della mappa. Nei porti, d'ora in poi, si cercano." }
+];
+
+/* posizioni sulla mappa (riquadro 600 x 540) */
+const POS = [ [300,70], [222,272], [300,272], [378,272], [490,208], [300,470], [110,332], [182,108] ];
+const CENTRO_SACCA = [300,272];
+
+const AMBIENTI = [
+  {id:"oggi", em:"🏙️", t:"Il mondo di oggi", d:"un ufficio, una scuola, una città"},
+  {id:"fiaba", em:"🏰", t:"Fiaba o fantasy"},
+  {id:"fanta", em:"🚀", t:"Fantascienza"},
+  {id:"passato", em:"⛵", t:"Avventura nel passato"},
+  {id:"animali", em:"🦉", t:"Mondo animale"},
+  {id:"altro", em:"✏️", t:"Altro", d:"lo scrivete voi"}
+];
+const EROI = [
+  {id:"gruppo", em:"👥", t:"Il gruppo intero", d:"un eroe collettivo"},
+  {id:"personaggio", em:"🧑", t:"Un personaggio inventato", d:"che vi rappresenta"},
+  {id:"animale", em:"🦊", t:"Un animale", d:"o un branco, uno stormo"},
+  {id:"simbolo", em:"⭐", t:"Una figura simbolica", d:"un oggetto, un elemento, una nave"}
+];
+const FORMATI = [
+  {id:"prosa", em:"📖", t:"Racconto"},
+  {id:"illustrato", em:"🖼️", t:"Racconto illustrato", d:"testo e immagini"},
+  {id:"graphic", em:"🎞️", t:"Graphic novel", d:"vignette con didascalie, senza balloon"},
+  {id:"altro", em:"✏️", t:"Altro", d:"lo scrivete voi"}
+];
+const PER = [
+  {id:"noi", em:"🪞", t:"Per noi"}, {id:"colleghi", em:"🤝", t:"Per i colleghi"},
+  {id:"bambini", em:"🧸", t:"Per dei bambini"}, {id:"figli", em:"🏡", t:"Per i nostri figli"},
+  {id:"genitori", em:"👪", t:"Per altri genitori"}, {id:"altro", em:"✏️", t:"Altro", d:"lo scrivete voi"}
+];
+const TONI = [
+  {id:"avventuroso", em:"🧭", t:"Avventuroso"}, {id:"ironico", em:"😏", t:"Ironico"},
+  {id:"poetico", em:"🌙", t:"Poetico"}, {id:"epico", em:"⚔️", t:"Epico"}, {id:"fiabesco", em:"✨", t:"Fiabesco"},
+  {id:"altro", em:"✏️", t:"Altro", d:"lo scrivete voi"}
+];
+const DECISIONI = [
+  {id:"subito", em:"🤝", t:"Eravamo subito d'accordo"},
+  {id:"discusso", em:"💬", t:"Ne abbiamo discusso"},
+  {id:"scelto", em:"⚖️", t:"Abbiamo scelto tra idee diverse"},
+  {id:"una", em:"☝️", t:"Ha deciso una persona"}
+];
+const MOMENTI = [
+  {id:"svolta", em:"💡", t:"Svolta", d:"un'idea ha cambiato la storia"},
+  {id:"disaccordo", em:"⚡", t:"Disaccordo", d:"vedevamo le cose in modo diverso"},
+  {id:"ia", em:"🤖", t:"L'IA ci ha sorpreso", d:"in bene o in male"},
+  {id:"strada", em:"🔁", t:"Abbiamo cambiato strada", d:"siamo tornati indietro"}
+];
+const TEMPO_SUGGERITO = 4 * 60 * 1000;   // 4 minuti per carta, solo indicativo
+
+/* ============================================================
+   ICONE (disegno semplice, nostro)
+   ============================================================ */
+function icona(id, col) {
+  const s = `fill="none" stroke="${col}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"`;
+  const f = `fill="${col}"`;
+  const d = {
+    mo:`<path ${s} d="M9 25 L24 12 L39 25"/><rect ${s} x="13" y="24" width="22" height="14"/><rect ${s} x="21" y="30" width="6" height="8"/><path ${s} d="M3 44 Q24 35 45 44"/>`,
+    h:`<line ${s} x1="12" y1="7" x2="12" y2="33"/><line ${s} x1="6" y1="28" x2="18" y2="28"/><circle ${f} cx="12" cy="38" r="2.5"/><path ${s} d="M26 32 Q26 12 36 12 Q46 12 46 32 Z"/><line ${s} x1="30" y1="22" x2="42" y2="22"/><line ${s} x1="36" y1="22" x2="36" y2="31"/>`,
+    al:`<circle ${s} cx="18" cy="24" r="10"/><circle ${s} cx="30" cy="24" r="10"/>`,
+    ne:`<path ${s} d="M12 36 Q4 16 18 8 Q13 22 21 32"/><path ${s} d="M36 36 Q44 16 30 8 Q35 22 27 32"/>`,
+    pr:`<line ${s} x1="10" y1="40" x2="38" y2="8"/><line ${s} x1="38" y1="40" x2="10" y2="8"/><line ${s} x1="12" y1="30" x2="19" y2="37"/><line ${s} x1="29" y1="37" x2="36" y2="30"/>`,
+    n:`<path ${s} d="M3 24 Q12 14 21 24 Q12 31 3 24 Z"/><circle ${f} cx="12" cy="23" r="3"/><path ${s} d="M27 24 Q36 14 45 24 Q36 31 27 24 Z"/><circle ${f} cx="36" cy="23" r="3"/>`,
+    e:`<rect ${s} x="5" y="9" width="20" height="20" rx="4"/><circle ${f} cx="10.5" cy="14.5" r="2"/><circle ${f} cx="15" cy="19" r="2"/><circle ${f} cx="19.5" cy="23.5" r="2"/><rect ${s} x="24" y="21" width="19" height="19" rx="4"/><circle ${f} cx="29" cy="26" r="2"/><circle ${f} cx="38" cy="35" r="2"/>`,
+    c:`<circle ${s} cx="24" cy="15" r="10"/><path ${s} d="M24 25 Q21 30 24 34"/><path ${s} d="M17 40 L24 34 L31 40"/><rect ${s} x="19" y="40" width="10" height="6"/>`
+  };
+  return `<svg viewBox="0 0 48 48" aria-hidden="true">${d[id] || ""}</svg>`;
+}
+function colore(c) { return c.tipo === "fase" ? ARANCIO : BLU; }
+
+/* ============================================================
+   STATO (salvato solo su questo dispositivo)
+   ============================================================ */
+const CHIAVE = "viaggioEroe-v1";
+function nuovoStato() {
+  return { v:1, creato:Date.now(), gruppo:"", amb:"", ambAltro:"", eroe:"", nomi:"",
+    carte: CARTE.map(() => ({ a:[], b:[], dec:"", ms:0, lant:0, fatta:false, riaperta:0, pass:false, anticipata:false })),
+    forma:{ formato:"", per:"", tono:"" }, diario:[], taccuino:[], passo:0, schermata:"s-intro", corrente:0 };
+}
+function carica() {
+  try { const t = localStorage.getItem(CHIAVE); if (t) { const o = JSON.parse(t); if (o && o.v === 1) return o; } } catch(e) {}
+  return null;
+}
+let S = carica() || nuovoStato();
+/* compatibilità con salvataggi precedenti */
+if (!Array.isArray(S.taccuino)) S.taccuino = [];
+if (typeof S.passo !== "number") { let k = 0; while (k < 8 && S.carte[k].fatta) k++; S.passo = k; }
+function salva() { try { localStorage.setItem(CHIAVE, JSON.stringify(S)); } catch(e) {} }
+function haIniziato() { return !!(S.eroe || S.amb || S.carte.some(c => c.a.length || c.b.length)); }
+
+/* ============================================================
+   UTILITÀ
+   ============================================================ */
+const $ = id => document.getElementById(id);
+function esc(t) { return String(t).replace(/[&<>"']/g, m => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m])); }
+function plurale() { return S.eroe === "gruppo"; }
+function domandaStoria(i) { return plurale() ? CARTE[i].bp : CARTE[i].bs; }
+function trova(lista, id) { return lista.find(x => x.id === id); }
+function fmtMin(ms) { const m = Math.round(ms / 60000); return m < 1 ? "meno di 1 min" : m + " min"; }
+function ora(ts) { const d = new Date(ts); return String(d.getHours()).padStart(2,"0") + ":" + String(d.getMinutes()).padStart(2,"0"); }
+function toast(t) {
+  document.querySelectorAll(".toast").forEach(x => x.remove());
+  const d = document.createElement("div"); d.className = "toast"; d.textContent = t;
+  document.body.appendChild(d); setTimeout(() => d.remove(), 2200);
+}
+function popupAperto() { return !$("velo").classList.contains("nascosto"); }
+function mostraPopup(html, col) {
+  const p = $("popup"); p.innerHTML = html; p.style.setProperty("--c", col || "#999");
+  $("velo").classList.remove("nascosto");
+}
+function chiudiPopup() { $("velo").classList.add("nascosto"); $("popup").innerHTML = ""; }
+function libera(i) { return CARTE[i].tipo === "risorsa"; }          // Eroi, Alleati, Nemici: sempre esplorabili
+function disponibile(i) { return libera(i) || i <= S.passo || S.carte[i].fatta; }
+function tutteFatte() { return S.passo >= CARTE.length; }
+
+function tessere(contId, lista, scelto, fn) {
+  $(contId).innerHTML = lista.map(x =>
+    `<button class="tessera${x.id === scelto ? " sel" : ""}" onclick="${fn}('${x.id}')">
+       <span class="em">${x.em}</span><span class="t">${esc(x.t)}</span>${x.d ? `<span class="d">${esc(x.d)}</span>` : ""}
+     </button>`).join("");
+}
+
+/* ============================================================
+   NAVIGAZIONE
+   ============================================================ */
+let cartaAperta = -1, faccia = "a", entrata = 0, appenaAttaccato = -1;
+
+function mostra(id) {
+  if (popupAperto()) chiudiPopup();
+  if (cartaAperta >= 0 && id !== "s-carta") esciCarta();
+  document.querySelectorAll(".schermata").forEach(s => s.classList.add("nascosto"));
+  $(id).classList.remove("nascosto");
+  $("barra").classList.toggle("nascosto", id === "s-intro" || id === "s-prep");
+  $("btMappa").classList.toggle("nascosto", id !== "s-carta");
+  $("btTacc").classList.toggle("nascosto", id === "s-specchio");
+  $("crediti").classList.toggle("nascosto", id !== "s-intro" && id !== "s-scheda");   // firma solo all'inizio e nella scheda finale
+  aggTacc();
+  if (id !== "s-intro" && id !== "s-specchio") { S.schermata = id; salva(); }
+  window.scrollTo(0, 0);
+  if (id === "s-intro") renderIntro();
+  if (id === "s-prep") renderPrep();
+  if (id === "s-tavolo") renderTavolo();
+  if (id === "s-forma") renderForma();
+  if (id === "s-scheda") { renderScheda(); renderDiario(); }
+  if (id === "s-specchio") renderSpecchio();
+}
+
+/* Accesso nascosto per chi conduce: tre tocchi veloci sul titolo */
+let tocchi = [], schermataPrima = "s-intro";
+function tocchiConduttore() {
+  const ora = Date.now();
+  tocchi = tocchi.filter(t => ora - t < 1500); tocchi.push(ora);
+  if (tocchi.length >= 3) { tocchi = []; apriConduttore(); }
+}
+function apriConduttore() {
+  schermataPrima = (S.schermata && S.schermata !== "s-specchio") ? S.schermata : "s-intro";
+  if (cartaAperta >= 0) schermataPrima = "s-tavolo";
+  mostra("s-specchio");
+}
+function esciConduttore() {
+  if (schermataPrima === "s-carta") { mostra("s-tavolo"); return; }
+  mostra($(schermataPrima) ? schermataPrima : "s-intro");
+}
+function chiediRicomincia() {
+  mostraPopup(`<h2>Ricominciare da zero?</h2>
+    <p>Tutto il lavoro di questo gruppo sarà cancellato da questo tablet. Se vi serve, prima copiate o salvate la scheda.</p>
+    <button class="bott" onclick="chiudiPopup()">Annulla</button>
+    <button class="bott arancio" onclick="ricomincia()">Sì, ricominciamo</button>`);
+}
+function ricomincia() {
+  cartaAperta = -1;
+  S = nuovoStato(); salva(); chiudiPopup(); mostra("s-prep");
+}
+function mostraCrediti() {
+  mostraPopup(`<h2>Il Viaggio dell'Eroe</h2>
+    <p>Un progetto di <b>Dott. Magri Gregorio</b><br>Psicologo/Psicoterapeuta</p>
+    <p>Cooperativa/Istituto Minotauro — Milano</p>
+    <p class="piccolo">© 2026 — Tutti i diritti riservati</p>
+    <button class="bott pieno" onclick="chiudiPopup()">Chiudi</button>`);
+}
+
+/* ============================================================
+   APERTURA E PREPARAZIONE
+   ============================================================ */
+function renderIntro() {
+  $("introCarte").innerHTML = CARTE.map(c => `<div class="mini" style="background:${colore(c)}">${c.sigla}</div>`).join("");
+  $("introBottoni").innerHTML = haIniziato()
+    ? `<button class="bott pieno" onclick="riprendi()">Continuate il viaggio</button>
+       <button class="bott" onclick="chiediRicomincia()">Nuovo gruppo</button>`
+    : `<button class="bott pieno" onclick="mostra('s-prep')">Iniziamo</button>`;
+}
+function riprendi() {
+  if (!S.eroe || !S.amb) { mostra("s-prep"); return; }
+  if (S.schermata === "s-carta") { apriCarta(S.corrente); return; }
+  mostra(S.schermata && S.schermata !== "s-intro" && $(S.schermata) ? S.schermata : "s-tavolo");
+}
+function renderPrep() {
+  $("inGruppo").value = S.gruppo; $("inNomi").value = S.nomi; $("inAmbAltro").value = S.ambAltro;
+  tessere("tesAmb", AMBIENTI, S.amb, "scegliAmb");
+  tessere("tesEroe", EROI, S.eroe, "scegliEroe");
+  aggPrep();
+}
+function scegliAmb(id) { S.amb = id; salva(); tessere("tesAmb", AMBIENTI, S.amb, "scegliAmb"); aggPrep();
+  if (id === "altro") setTimeout(() => $("inAmbAltro").focus(), 50); }
+function scegliEroe(id) { S.eroe = id; salva(); tessere("tesEroe", EROI, S.eroe, "scegliEroe"); aggPrep(); }
+function aggPrep() {
+  $("inAmbAltro").classList.toggle("nascosto", S.amb !== "altro");
+  const ok = S.amb && (S.amb !== "altro" || S.ambAltro.trim()) && S.eroe && S.nomi.trim();
+  $("btPrep").disabled = !ok;
+}
+function testoAmbiente() { return S.amb === "altro" ? (S.ambAltro.trim() || "Altro") : (trova(AMBIENTI, S.amb) || {t:""}).t; }
+
+/* ============================================================
+   TAVOLO E MAPPA
+   ============================================================ */
+let pedinaPrima = null;
+
+function posPedina() {
+  const i = S.passo;
+  if (i >= CARTE.length) return POS[0];                     // cerchio chiuso: l'eroe torna a casa
+  if (i >= 1 && i <= 3) return CENTRO_SACCA;    // sta preparando la sacca
+  return POS[i];
+}
+function pct(p) { return `left:${(p[0] / 600 * 100).toFixed(2)}%;top:${(p[1] / 540 * 100).toFixed(2)}%`; }
+
+function renderTavolo() {
+  const eroe = trova(EROI, S.eroe) || {em:"🧭", t:""};
+  $("tavTitolo").textContent = S.nomi.trim() ? "Il viaggio di " + S.nomi.trim() : "Il viaggio";
+  $("tavEroe").textContent = [testoAmbiente(), eroe.t].filter(Boolean).join(" · ");
+
+  let svg = `<svg viewBox="0 0 600 540">
+    <path d="M100 272 A200 200 0 0 0 500 272 Z" fill="rgba(47,42,36,.06)"/>
+    <circle cx="300" cy="272" r="200" fill="none" stroke="#bfb29b" stroke-width="3" stroke-dasharray="2 10" stroke-linecap="round"/>
+    <rect x="178" y="214" width="244" height="116" rx="18" fill="rgba(78,110,168,.08)" stroke="rgba(78,110,168,.35)" stroke-width="2" stroke-dasharray="6 6"/>
+    <text x="300" y="206" text-anchor="middle" font-size="15" fill="#4E6EA8" font-family="Georgia,serif" font-style="italic">La sacca: prima di partire</text>
+    <text x="300" y="395" text-anchor="middle" font-size="15" fill="#857a6b" font-family="Georgia,serif" font-style="italic">il mondo dell'avventura</text>
+  </svg>`;
+  let nodi = CARTE.map((c, i) => {
+    const st = (i === S.passo ? "disp " : "") + (S.carte[i].fatta ? "fatto" : (disponibile(i) ? "libero" : "bloccato"));
+    return `<button class="nodo ${c.tipo === "risorsa" ? "risorsa" : ""} ${st}" style="${pct(POS[i])}" onclick="toccaNodo(${i})" aria-label="${esc(c.nome)}">
+      <span class="sig">${c.sigla}</span><span class="nm">${esc(c.nome)}</span></button>`;
+  }).join("");
+  const dove = posPedina();
+  const partenza = pedinaPrima || dove;
+  $("mappa").innerHTML = svg + nodi + `<div class="pedina" id="pedina" style="${pct([partenza[0] + 44, partenza[1] - 40])}">${eroe.em}</div>`;
+  if (pedinaPrima && (pedinaPrima[0] !== dove[0] || pedinaPrima[1] !== dove[1])) {
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      const p = $("pedina"); if (p) p.setAttribute("style", pct([dove[0] + 44, dove[1] - 40]));
+    }));
+  }
+  pedinaPrima = dove;
+
+  const fatte = S.carte.filter(c => c.fatta).length;
+  const nota = `<p class="piccolo">Le tre carte della sacca (Eroi, Alleati, Nemici) potete aprirle quando volete.</p>`;
+  if (tutteFatte()) {
+    $("tavPiede").innerHTML = `<p><b>Il cerchio si è chiuso.</b> L'eroe è tornato a casa.</p>
+      <button class="bott pieno" onclick="mostra('s-forma')">Scelte di forma →</button>`;
+  } else {
+    const prossima = S.passo, gia = S.carte[prossima].fatta;
+    $("tavPiede").innerHTML = `<p class="piccolo">${fatte} carte su 8 · la prossima tappa è la carta che brilla</p>
+      <button class="bott ${CARTE[prossima].tipo === "fase" ? "arancio" : "blu"}" onclick="apriCarta(${prossima})">${gia ? "Rileggete" : "Girate"} la carta «${esc(CARTE[prossima].nome)}»</button>
+      ${S.passo > 0 && S.passo < 4 ? "" : nota}`;
+  }
+}
+function toccaNodo(i) {
+  if (!disponibile(i)) { toast("Prima le carte precedenti"); return; }
+  apriCarta(i);
+}
+
+/* ============================================================
+   CARTA
+   ============================================================ */
+function htmlCarta(i) {
+  const c = CARTE[i], col = colore(c);
+  const intest = c.tipo === "fase" ? `<span>FASI DELL'EROE</span><span>${c.num}</span>` : `<span>RISORSE</span><span></span>`;
+  return `<div class="carta-in" style="--c:${col}">
+    <div class="faccia fronte" style="--c:${col}">
+      <div class="fascia">${intest}</div>
+      <div class="centro">${icona(c.id, col)}</div>
+      <div class="nome">${esc(c.nome)}</div>
+      <div class="sotto">cosa è successo davvero · toccate per girare</div>
+    </div>
+    <div class="faccia retro" style="--c:${col}">
+      <div class="fascia">${intest}</div>
+      <div class="centro"><span class="sigla">${c.sigla}</span>${icona(c.id, "#fff")}</div>
+      <div class="nome">${esc(c.nome)}</div>
+      <div class="sotto">come lo racconta la storia</div>
+    </div></div>`;
+}
+
+function apriCarta(i) {
+  if (!disponibile(i)) return;
+  mostra("s-carta");
+  cartaAperta = i; S.corrente = i; faccia = "a"; entrata = Date.now();
+  const st = S.carte[i];
+  if (st.fatta && i !== S.passo) st.riaperta++;
+  salva();
+  const col = colore(CARTE[i]);
+  $("s-carta").style.setProperty("--c", col);
+  $("carta").className = "carta";
+  $("carta").innerHTML = htmlCarta(i);
+  $("introTappa").textContent = CARTE[i].intro;
+  renderPannello();
+  if ([2, 4, 6].includes(i) && !st.pass) {
+    st.pass = true; salva();
+    mostraPopup(`<h2>Passate il tablet</h2><p>Questa carta la scrive qualcuno che finora non ha scritto.</p>
+      <button class="bott pieno" onclick="chiudiPopup()">Fatto</button>`);
+  }
+}
+function esciCarta() {
+  if (cartaAperta < 0) return;
+  S.carte[cartaAperta].ms += Date.now() - entrata;
+  cartaAperta = -1; salva();
+}
+function tempoCarta() { return cartaAperta < 0 ? 0 : S.carte[cartaAperta].ms + (Date.now() - entrata); }
+
+function gira() {
+  if (cartaAperta < 0) return;
+  const st = S.carte[cartaAperta];
+  if (faccia === "a" && st.a.length === 0) { toast("Prima attaccate almeno un foglietto"); return; }
+  faccia = faccia === "a" ? "b" : "a";
+  $("carta").classList.toggle("girata", faccia === "b");
+  renderPannello();
+}
+
+function renderPannello() {
+  const i = cartaAperta; if (i < 0) return;
+  const c = CARTE[i], st = S.carte[i], lista = st[faccia];
+  const vecchio = $("nuovoFoglietto") ? $("nuovoFoglietto").value : "";
+  let h = `<div class="pann-testa">
+      <span class="pill ${faccia}">${faccia === "a" ? "Cosa è successo davvero" : "Come lo racconta la storia"}</span>
+      <span class="strumenti">
+        <button class="lanterna ${st.lant ? "accesa" : ""}" onclick="lanterna()">🏮 Lanterna</button>
+        <span class="cless" id="cless"></span>
+      </span></div>
+    <div class="domanda">${esc(faccia === "a" ? c.a : domandaStoria(i))}</div>`;
+  if (faccia === "b" && st.a.length) {
+    h += `<details class="promemoria"><summary>Che cosa avevate detto dell'esperienza</summary><ul>${st.a.map(n => `<li>${esc(n.t)}</li>`).join("")}</ul></details>`;
+  }
+  h += `<div class="bacheca">${lista.length ? lista.map((n, k) => htmlFoglietto(n, k, k === appenaAttaccato)).join("") :
+        `<span class="vuota">Ancora nessun foglietto. Scrivete un'idea per foglietto.</span>`}</div>`;
+  if (faccia === "b" && lista.length > 1) h += `<div class="suggerimento">Toccate ☆ sull'idea che non deve mancare nella storia.</div>`;
+  h += `<div class="scrivi"><textarea id="nuovoFoglietto" maxlength="220" placeholder="Un'idea per foglietto…" onkeydown="tastoFoglietto(event)" onfocus="vediCampo(this)"></textarea>
+        <button onclick="attacca()">Attacca</button></div>`;
+  if (faccia === "a") {
+    h += `<div class="azioni"><button class="bott" onclick="mostra('s-tavolo')">← Mappa</button>
+          <button class="bott pieno" onclick="gira()" ${st.a.length ? "" : "disabled"}>Girate la carta ↻</button></div>`;
+  } else {
+    h += `<div class="azioni"><button class="bott" onclick="gira()">↺ Torna all'esperienza</button>
+          <button class="bott pieno" onclick="completa()" ${st.b.length ? "" : "disabled"}>${st.fatta ? "Va bene così ✓" : "Carta completata ✓"}</button></div>`;
+  }
+  $("pannello").innerHTML = h;
+  $("nuovoFoglietto").value = vecchio;
+  appenaAttaccato = -1;
+  aggClessidra();
+}
+function htmlFoglietto(n, k, nuovo) {
+  const r = [-2, 1.5, -1, 2, -1.5, 1][k % 6];
+  return `<div class="foglietto ${faccia}${n.st ? " stella" : ""}${nuovo ? " nuovo" : ""}" style="--r:${r}deg">
+    <div class="tx">${esc(n.t)}</div>
+    <div class="fog-bot">
+      ${faccia === "b" ? `<button class="${n.st ? "st-on" : ""}" onclick="stella(${k})" aria-label="Stella">${n.st ? "★" : "☆"}</button>` : ""}
+      <button onclick="modifica(${k})" aria-label="Modifica">✎</button>
+      <button onclick="butta(${k})" aria-label="Butta">🗑</button>
+    </div></div>`;
+}
+function tastoFoglietto(ev) { if (ev.key === "Enter" && !ev.shiftKey) { ev.preventDefault(); attacca(); } }
+function vediCampo(el) { setTimeout(() => el.scrollIntoView({ block:"center", behavior:"smooth" }), 350); }
+function attacca() {
+  const ta = $("nuovoFoglietto"), t = ta.value.trim();
+  if (!t) { ta.focus(); return; }
+  S.carte[cartaAperta][faccia].push({ t, st:false });
+  appenaAttaccato = S.carte[cartaAperta][faccia].length - 1;
+  ta.value = ""; salva(); renderPannello();
+  $("nuovoFoglietto").focus();
+}
+function butta(k) { S.carte[cartaAperta][faccia].splice(k, 1); salva(); renderPannello(); }
+function stella(k) { const n = S.carte[cartaAperta].b[k]; n.st = !n.st; salva(); renderPannello(); }
+function modifica(k) {
+  const lista = S.carte[cartaAperta][faccia];
+  const ta = $("nuovoFoglietto");
+  const t = lista[k].t;
+  lista.splice(k, 1); salva();
+  const prima = ta.value.trim();
+  renderPannello();
+  $("nuovoFoglietto").value = prima ? prima + " " + t : t;
+  $("nuovoFoglietto").focus();
+}
+
+function lanterna() {
+  const i = cartaAperta, c = CARTE[i], st = S.carte[i];
+  st.lant = Math.max(st.lant, 1); salva();
+  mostraPopup(`<h2>🏮 La lanterna</h2><p>${esc(c.l1)}</p>
+    <div id="lant2"></div>
+    <p><button class="bott" id="btLant2" onclick="lanterna2()">Fate più luce: un esempio</button>
+    <button class="bott pieno" onclick="chiudiPopup();renderPannello()">Chiudi</button></p>`, colore(c));
+  if (st.lant >= 2) lanterna2();
+}
+function lanterna2() {
+  const i = cartaAperta, c = CARTE[i];
+  S.carte[i].lant = 2; salva();
+  $("lant2").innerHTML = `<p class="piccolo">Un esempio, da un'altra storia. Non copiatelo: serve solo a capire il passaggio.</p>
+    <div class="esempio ${faccia === "a" ? "qui" : ""}"><span class="et">Cosa è successo davvero</span>«${esc(c.ea)}»</div>
+    <div class="esempio ${faccia === "b" ? "qui" : ""}"><span class="et">Come lo racconta la storia</span>«${esc(c.eb)}»</div>`;
+  const b = $("btLant2"); if (b) b.remove();
+}
+
+function aggClessidra() {
+  const el = $("cless"); if (!el || cartaAperta < 0) return;
+  const ms = tempoCarta(), frac = Math.min(ms / TEMPO_SUGGERITO, 1);
+  const L = 2 * Math.PI * 10;
+  el.innerHTML = `<svg viewBox="0 0 26 26"><circle cx="13" cy="13" r="10" fill="none" stroke="#e5dccb" stroke-width="4"/>
+    <circle cx="13" cy="13" r="10" fill="none" stroke="${frac >= 1 ? "#c9b48a" : "var(--c)"}" stroke-width="4"
+      stroke-dasharray="${(L * frac).toFixed(1)} ${L.toFixed(1)}" transform="rotate(-90 13 13)"/></svg>
+    <span>${Math.floor(ms / 60000)} min</span>`;
+}
+setInterval(aggClessidra, 1000);
+
+function completa() {
+  const c = CARTE[cartaAperta];
+  if (S.carte[cartaAperta].dec) { finisci(); return; }      // già decisa: niente seconda domanda
+  mostraPopup(`<h2>Come avete deciso?</h2><p class="piccolo">Un tocco, senza pensarci troppo.</p>
+    <div class="tessere">${DECISIONI.map(d => `<button class="tessera" onclick="decidi('${d.id}')"><span class="em">${d.em}</span><span class="t">${esc(d.t)}</span></button>`).join("")}</div>
+    <p style="margin-top:10px"><button class="bott" onclick="chiudiPopup()">Annulla</button></p>`, colore(c));
+}
+function decidi(id) {
+  const i = cartaAperta, st = S.carte[i];
+  st.dec = id;
+  chiudiPopup();
+  finisci();
+}
+function finisci() {
+  const i = cartaAperta, st = S.carte[i];
+  if (!st.fatta && i > S.passo) st.anticipata = true;
+  st.fatta = true;
+  if (i === S.passo) S.passo++;
+  salva();
+  mostra("s-tavolo");
+}
+
+document.addEventListener("visibilitychange", () => {
+  if (cartaAperta < 0) return;
+  if (document.hidden) { S.carte[cartaAperta].ms += Date.now() - entrata; salva(); }
+  else entrata = Date.now();
+});
+
+/* ============================================================
+   TACCUINO: idee per dopo, da qualunque schermata
+   ============================================================ */
+function aggTacc() { const b = $("btTacc"); if (b) b.textContent = "📒 Taccuino" + (S.taccuino.length ? " (" + S.taccuino.length + ")" : ""); }
+function apriTaccuino() {
+  mostraPopup(`<h2>📒 Taccuino</h2>
+    <p class="piccolo">Un'idea per più avanti? Un finale, un personaggio, una scena? Annotatela qui: la ritroverete nella vostra scheda.</p>
+    <div id="listaIdee"></div>
+    <div class="scrivi" style="margin-top:10px"><textarea id="nuovaIdea" maxlength="220" placeholder="Un'idea per dopo…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();aggiungiIdea()}"></textarea>
+      <button onclick="aggiungiIdea()">Annota</button></div>
+    <p style="margin-top:12px;text-align:right"><button class="bott pieno" onclick="chiudiPopup();aggTacc();if(S.schermata==='s-scheda')renderScheda()">Chiudi</button></p>`);
+  renderIdee();
+  setTimeout(() => { const t = $("nuovaIdea"); if (t) t.focus(); }, 80);
+}
+function renderIdee() {
+  $("listaIdee").innerHTML = S.taccuino.length
+    ? S.taccuino.map((n, k) => `<div class="idea"><span>${esc(n.t)}</span><button onclick="togliIdea(${k})" aria-label="Butta">🗑</button></div>`).join("")
+    : `<p class="piccolo"><i>Ancora vuoto.</i></p>`;
+}
+function aggiungiIdea() {
+  const t = $("nuovaIdea"), v = t.value.trim();
+  if (!v) return;
+  S.taccuino.push({ t:v, ts:Date.now() }); salva(); t.value = ""; renderIdee(); aggTacc(); t.focus();
+}
+function togliIdea(k) { S.taccuino.splice(k, 1); salva(); renderIdee(); aggTacc(); }
+
+/* ============================================================
+   FORMA
+   ============================================================ */
+function renderForma() {
+  tessere("tesFormato", FORMATI, S.forma.formato, "sceltaFormato");
+  tessere("tesPer", PER, S.forma.per, "sceltaPer");
+  tessere("tesTono", TONI, S.forma.tono, "sceltaTono");
+  $("inFormatoAltro").value = S.forma.formatoAltro || "";
+  $("inPerAltro").value = S.forma.perAltro || "";
+  $("inTonoAltro").value = S.forma.tonoAltro || "";
+  aggForma();
+}
+function aggForma() {
+  const ok = k => S.forma[k] && (S.forma[k] !== "altro" || (S.forma[k + "Altro"] || "").trim());
+  [["formato", "inFormatoAltro"], ["per", "inPerAltro"], ["tono", "inTonoAltro"]].forEach(([k, id]) =>
+    $(id).classList.toggle("nascosto", S.forma[k] !== "altro"));
+  $("btForma").disabled = !(ok("formato") && ok("per") && ok("tono"));
+}
+function scelta(k, id, campo) {
+  S.forma[k] = id; salva(); renderForma();
+  if (id === "altro") setTimeout(() => $(campo).focus(), 50);
+}
+function sceltaFormato(id) { scelta("formato", id, "inFormatoAltro"); }
+function sceltaPer(id) { scelta("per", id, "inPerAltro"); }
+function sceltaTono(id) { scelta("tono", id, "inTonoAltro"); }
+function voceForma(lista, k) {
+  const id = S.forma[k]; if (!id) return null;
+  if (id === "altro") return { t: (S.forma[k + "Altro"] || "").trim() || "Altro" };
+  return trova(lista, id);
+}
+
+/* ============================================================
+   SCHEDA
+   ============================================================ */
+function testoScheda() {
+  const eroe = trova(EROI, S.eroe), F = voceForma(FORMATI, "formato"), P = voceForma(PER, "per"), T = voceForma(TONI, "tono");
+  const r = [];
+  r.push("IL VIAGGIO DELL'EROE — LA NOSTRA SCHEDA");
+  if (S.gruppo.trim()) r.push("Gruppo: " + S.gruppo.trim());
+  r.push("Dove si svolge la storia: " + testoAmbiente());
+  r.push("L'eroe: " + (eroe ? eroe.t.toLowerCase() : "") + (S.nomi.trim() ? " — " + S.nomi.trim() : ""));
+  if (F) r.push("Formato: " + F.t + (F.d ? " (" + F.d + ")" : ""));
+  if (P) r.push("Destinatari: " + P.t.replace(/^Per /, "").replace(/^per /, ""));
+  if (T) r.push("Tono: " + T.t.toLowerCase());
+  r.push("");
+  r.push("Le idee segnate con (!) sono quelle che non devono mancare nella storia.");
+  CARTE.forEach((c, i) => {
+    const st = S.carte[i];
+    r.push("");
+    r.push((i + 1) + ". " + c.nome.toUpperCase());
+    r.push("Cosa è successo davvero:");
+    if (st.a.length) st.a.forEach(n => r.push("- " + n.t)); else r.push("- (niente)");
+    r.push("Come lo racconta la storia:");
+    if (st.b.length) st.b.forEach(n => r.push("- " + n.t + (n.st ? " (!)" : ""))); else r.push("- (niente)");
+  });
+  if (S.taccuino.length) {
+    r.push(""); r.push("IDEE SPARSE (dal taccuino)");
+    S.taccuino.forEach(n => r.push("- " + n.t));
+  }
+  return r.join("\n");
+}
+function renderScheda() {
+  const eroe = trova(EROI, S.eroe), F = voceForma(FORMATI, "formato"), P = voceForma(PER, "per"), T = voceForma(TONI, "tono");
+  let h = `<div class="sch-testa">
+    ${S.gruppo.trim() ? `<b>${esc(S.gruppo.trim())}</b><br>` : ""}
+    Dove: ${esc(testoAmbiente())} · Eroe: ${esc(eroe ? eroe.t : "—")}${S.nomi.trim() ? " — " + esc(S.nomi.trim()) : ""}<br>
+    ${F ? "Formato: " + esc(F.t) : "Formato: da scegliere"}${P ? " · " + esc(P.t) : ""}${T ? " · Tono " + esc(T.t.toLowerCase()) : ""}
+  </div>`;
+  CARTE.forEach((c, i) => {
+    const st = S.carte[i];
+    const li = (l, b) => l.length ? l.map(n => `<li class="${b && n.st ? "st" : ""}">${b && n.st ? "★ " : ""}${esc(n.t)}</li>`).join("") : `<li class="piccolo">—</li>`;
+    h += `<div class="sch-carta" style="--c:${colore(c)}"><h4><span class="sg">${c.sigla}</span>${esc(c.nome)}</h4>
+      <div class="sch-col"><div><div class="et">COSA È SUCCESSO DAVVERO</div><ul>${li(st.a, false)}</ul></div>
+      <div><div class="et">COME LO RACCONTA LA STORIA</div><ul>${li(st.b, true)}</ul></div></div></div>`;
+  });
+  if (S.taccuino.length) h += `<div class="sch-carta" style="--c:#857a6b"><h4>📒 Idee sparse dal taccuino</h4><ul style="margin-left:18px">${S.taccuino.map(n => `<li>${esc(n.t)}</li>`).join("")}</ul></div>`;
+  $("schedaVista").innerHTML = h;
+  $("testoScheda").value = testoScheda();
+  $("promptBox").classList.toggle("nascosto", !impConduttore().prompt);
+}
+/* ---------- prompt automatico (pulsante di emergenza, facoltativo) ---------- */
+const CHIAVE_COND = "viaggioEroe-conduttore";
+function impConduttore() {
+  try { const o = JSON.parse(localStorage.getItem(CHIAVE_COND) || "{}"); return { prompt: o.prompt !== false }; } catch(e) { return { prompt:true }; }
+}
+function cambiaPrompt(v) { try { localStorage.setItem(CHIAVE_COND, JSON.stringify({ prompt: !!v })); } catch(e) {} toast(v ? "Pulsante visibile ai gruppi" : "Pulsante nascosto ai gruppi"); }
+function testoPrompt() {
+  const F = voceForma(FORMATI, "formato"), P = voceForma(PER, "per"), T = voceForma(TONI, "tono");
+  const f = S.forma.formato;
+  let come;
+  if (f === "prosa") come = "un racconto in prosa, diviso in brevi capitoli con un titolo ciascuno";
+  else if (f === "illustrato") come = "un racconto illustrato di 8 pagine. Per ogni pagina scrivi il testo (circa 50 parole) e, a parte, una breve descrizione dell'illustrazione. Prima della storia prepara una scheda visiva dei personaggi (aspetto, abiti, colori, un dettaglio riconoscibile) e scegli un unico stile grafico, da richiamare in ogni descrizione. Se puoi generare immagini, alla fine chiedici se vogliamo che tu le crei, una alla volta";
+  else if (f === "graphic") come = "una graphic novel di 8 tavole senza balloon né dialoghi. Per ogni tavola scrivi una didascalia narrativa (al massimo tre frasi) e descrivi che cosa mostra la vignetta. Prima della storia prepara una scheda visiva dei personaggi e scegli un unico stile grafico. Se puoi generare immagini, alla fine chiedici se vogliamo che tu le crei, una alla volta, senza scritte dentro le immagini";
+  else come = "questo formato, scelto dal gruppo: «" + (F ? F.t : "libero") + "». Adatta la struttura al formato";
+  const r = [];
+  r.push("Sei uno scrittore che lavora con un gruppo di adulti. Il gruppo ha appena concluso un percorso di laboratorio e vuole raccontarlo in forma romanzata, seguendo la struttura del viaggio dell'eroe.");
+  r.push("");
+  r.push("Qui sotto trovi la scheda del gruppo. Per ogni tappa ci sono due parti: «Cosa è successo davvero» (l'esperienza vissuta) e «Come lo racconta la storia» (come il gruppo l'ha trasformata). Le idee segnate con (!) non devono mancare. In fondo possono esserci idee sparse dal taccuino: usale se ti sembrano utili.");
+  r.push("");
+  r.push("Scrivi " + come + ".");
+  r.push("");
+  r.push("Regole:");
+  r.push("- segui le 8 tappe nell'ordine della scheda;");
+  r.push("- la trama viene dalla colonna «Come lo racconta la storia»; la colonna «Cosa è successo davvero» ti serve per restare fedele al senso dell'esperienza;");
+  r.push("- usa solo i nomi di fantasia della scheda, mai nomi di persone reali;");
+  r.push("- non aggiungere eventi importanti in contrasto con la scheda;");
+  if (P) r.push("- la storia è pensata " + (P.t.toLowerCase().startsWith("per ") ? P.t.toLowerCase() : "per: " + P.t) + ": adatta lingua e immagini;");
+  if (T) r.push("- tono: " + T.t.toLowerCase() + ";");
+  r.push("- il testo della storia non deve superare le 400 parole in tutto" + (f === "illustrato" || f === "graphic" ? " (descrizioni delle immagini escluse)" : "") + ";");
+  r.push("- scrivi in italiano.");
+  r.push("");
+  r.push("Alla fine proponi un titolo e scrivi, in tre righe, che cosa hai capito del percorso di questo gruppo.");
+  r.push("");
+  r.push(testoScheda());
+  return r.join("\n");
+}
+function chiediPrompt() {
+  mostraPopup(`<div style="text-align:center"><div class="em-tit">Pulsante di emergenza</div>
+    <h2>Volete davvero procedere?</h2></div>
+    <p>Il gioco preparerà un <b>prompt automatico</b>: prende <b>tutto</b> quello che avete scritto sui foglietti e chiede all'IA di scrivere la storia al posto vostro, in al massimo 400 parole.</p>
+    <p>Così non sarete voi a scegliere che cosa chiedere all'IA. Potete usarlo se avete poco tempo, oppure dopo aver lavorato da soli, per confrontare.</p>
+    <p style="text-align:center;margin-top:14px"><button class="bott" onclick="chiudiPopup()">No, proviamo da soli</button>
+    <button class="bott rosso" onclick="mostraPrompt()">Sì, prepara il prompt</button></p>`);
+}
+function mostraPrompt() {
+  if (!S.promptAperto) { S.promptAperto = Date.now(); salva(); }
+  mostraPopup(`<h2>Prompt automatico</h2>
+    <p class="piccolo">Copiatelo e incollatelo nella vostra IA. Leggete insieme quello che scrive: vi convince? Che cosa avreste chiesto voi di diverso?</p>
+    <textarea id="testoPrompt" readonly></textarea>
+    <p><button class="bott pieno" onclick="copiaPrompt()">Copia il prompt</button>
+    <button class="bott" onclick="chiudiPopup()">Chiudi</button></p>`);
+  $("testoPrompt").value = testoPrompt();
+}
+function copiaPrompt() {
+  const t = testoPrompt();
+  const ripiego = () => {
+    const ta = $("testoPrompt"); ta.focus(); ta.select(); ta.setSelectionRange(0, t.length);
+    let ok = false; try { ok = document.execCommand("copy"); } catch(e) {}
+    toast(ok ? "Prompt copiato" : "Tenete premuto nel riquadro e copiate a mano");
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(() => toast("Prompt copiato"), ripiego);
+  else ripiego();
+}
+function copiaScheda() {
+  const t = testoScheda();
+  const ripiego = () => {
+    const ta = $("testoScheda"); ta.value = t; ta.focus(); ta.select(); ta.setSelectionRange(0, t.length);
+    let ok = false; try { ok = document.execCommand("copy"); } catch(e) {}
+    toast(ok ? "Testo copiato" : "Copiate a mano dal riquadro in fondo");
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(t).then(() => toast("Testo copiato"), ripiego);
+  } else ripiego();
+}
+function salvaScheda() {
+  try {
+    const blob = new Blob([testoScheda()], { type:"text/plain;charset=utf-8" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "viaggio-eroe-" + (S.gruppo.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "scheda") + ".txt";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+    toast("Se il file non compare, usate «Copia il testo»");
+  } catch(e) { toast("Usate «Copia il testo»"); }
+}
+
+/* ============================================================
+   DIARIO DI BORDO
+   ============================================================ */
+function renderDiario() {
+  $("diarioBott").innerHTML = MOMENTI.map(m =>
+    `<button onclick="nuovoMomento('${m.id}')"><span class="em">${m.em}</span>${esc(m.t)}<br><span class="piccolo">${esc(m.d)}</span></button>`).join("");
+  $("diarioLista").innerHTML = S.diario.length
+    ? `<h3>I vostri momenti</h3>` + S.diario.slice().reverse().map(x => {
+        const m = trova(MOMENTI, x.tipo);
+        return `<div class="momento"><span class="ora">${ora(x.ts)}</span>${m.em} <b>${esc(m.t)}</b>${x.nota ? " — " + esc(x.nota) : ""}</div>`;
+      }).join("")
+    : `<p class="piccolo">Ancora nessun momento segnato.</p>`;
+}
+function nuovoMomento(id) {
+  const m = trova(MOMENTI, id);
+  mostraPopup(`<h2>${m.em} ${esc(m.t)}</h2><p class="piccolo">Due parole per ricordarlo (facoltativo).</p>
+    <input type="text" id="notaMomento" maxlength="140" onkeydown="if(event.key==='Enter')registraMomento('${id}')">
+    <p style="margin-top:12px"><button class="bott" onclick="chiudiPopup()">Annulla</button>
+    <button class="bott pieno" onclick="registraMomento('${id}')">Segna</button></p>`);
+  setTimeout(() => { const n = $("notaMomento"); if (n) n.focus(); }, 80);
+}
+function registraMomento(id) {
+  const n = $("notaMomento");
+  S.diario.push({ tipo:id, ts:Date.now(), nota: n ? n.value.trim() : "" });
+  salva(); chiudiPopup(); renderDiario(); toast("Segnato");
+}
+
+/* ============================================================
+   SPECCHIO DEL VIAGGIO
+   ============================================================ */
+function spunti() {
+  const out = [], C = S.carte;
+  const nomi = idx => idx.map(i => "«" + CARTE[i].nome + "»");
+  const elenco = arr => arr.length <= 1 ? arr.join("") : arr.slice(0, -1).join(", ") + " e " + arr[arr.length - 1];
+
+  // tempo
+  const tempi = C.map(c => c.ms), tot = tempi.reduce((a, b) => a + b, 0), media = tot / 8;
+  const iMax = tempi.indexOf(Math.max(...tempi));
+  if (tot > 0) {
+    if (tempi[iMax] > media * 1.5 && tempi[iMax] > 2 * 60000)
+      out.push(`Sulla carta «${CARTE[iMax].nome}» vi siete fermati più a lungo (${fmtMin(tempi[iMax])}). Che cosa è successo lì?`);
+    else out.push("Avete dato più o meno lo stesso tempo a tutte le carte. Avete scelto un ritmo, o è venuto da sé?");
+  }
+  // foglietti
+  const conta = C.map(c => c.a.length + c.b.length);
+  const mx = Math.max(...conta), mn = Math.min(...conta);
+  if (mx - mn >= 3) {
+    const i1 = conta.indexOf(mx), i2 = conta.indexOf(mn);
+    out.push(`Sulla carta «${CARTE[i1].nome}» avete scritto ${mx} idee, sulla carta «${CARTE[i2].nome}» ${mn === 1 ? "una sola" : mn}. Perché, secondo voi?`);
+  }
+  const totA = C.reduce((s, c) => s + c.a.length, 0), totB = C.reduce((s, c) => s + c.b.length, 0);
+  if (totA + totB > 0) {
+    if (totA > totB * 1.4) out.push(`Avete scritto ${totA} foglietti sull'esperienza e ${totB} sulla storia. Vi è venuto più facile ricordare che inventare?`);
+    else if (totB > totA * 1.4) out.push(`Avete scritto ${totB} foglietti sulla storia e ${totA} sull'esperienza. Vi è venuto più facile inventare che ricordare?`);
+  }
+  // decisioni
+  const nd = id => C.filter(c => c.dec === id).length;
+  const subito = nd("subito"), disc = nd("discusso") + nd("scelto"), una = nd("una");
+  if (una >= 2) out.push(`Su ${una} carte ha deciso una persona. Era quello che volevate?`);
+  if (disc >= 4) out.push(`Su ${disc} carte su 8 avete discusso o scelto tra idee diverse. Come siete arrivati a un accordo?`);
+  if (subito >= 5) out.push(`Su ${subito} carte su 8 eravate subito d'accordo. È stato davvero facile, o qualcuno ha preferito non dire la sua?`);
+  // stelle
+  const stelle = C.reduce((s, c) => s + c.b.filter(n => n.st).length, 0);
+  if (stelle === 0 && totB >= 8) out.push("Non avete segnato nessuna idea con la stella. Come avete deciso che cosa sarebbe entrato nella storia?");
+  // lanterna
+  const lant = C.map((c, i) => c.lant ? i : -1).filter(i => i >= 0);
+  if (lant.length) out.push(`Avete acceso la lanterna ${lant.length === 1 ? "sulla carta" : "sulle carte"} ${elenco(nomi(lant))}. Che cosa vi aveva bloccato?`);
+  else if (C.some(c => c.fatta)) out.push("Non avete mai acceso la lanterna. Come vi siete aiutati tra voi?");
+  // carte della sacca compilate prima del loro turno
+  const ant = C.map((c, i) => c.anticipata ? i : -1).filter(i => i >= 0);
+  if (ant.length) out.push(`Avete compilato ${ant.length === 1 ? "la carta" : "le carte"} ${elenco(nomi(ant))} prima del ${ant.length === 1 ? "suo" : "loro"} turno. Che strategia avevate scelto?`);
+  // taccuino
+  if (S.taccuino.length >= 2) out.push(`Avete annotato ${S.taccuino.length} idee nel taccuino. Quali sono entrate davvero nella storia?`);
+  // carte riaperte
+  const rip = C.map((c, i) => c.riaperta ? i : -1).filter(i => i >= 0);
+  if (rip.length) out.push(`Siete tornati ${rip.length === 1 ? "sulla carta" : "sulle carte"} ${elenco(nomi(rip))} dopo ${rip.length === 1 ? "averla chiusa" : "averle chiuse"}. Che cosa vi ha fatto tornare indietro?`);
+  // prompt automatico
+  if (S.promptAperto) out.push(`Alle ${ora(S.promptAperto)} avete premuto il pulsante «Prompt automatico». Che differenza c'è tra la storia dell'IA e quella che avreste costruito voi?`);
+  // diario
+  const nm = id => S.diario.filter(x => x.tipo === id).length;
+  if (S.diario.length === 0) out.push("Durante il lavoro con l'intelligenza artificiale non avete segnato nessun momento. Com'è andata?");
+  else {
+    if (nm("disaccordo")) out.push(`Avete segnato ${nm("disaccordo") === 1 ? "un disaccordo" : nm("disaccordo") + " disaccordi"}. Come ${nm("disaccordo") === 1 ? "l'avete risolto" : "li avete risolti"}?`);
+    if (nm("svolta")) out.push(`Avete segnato ${nm("svolta") === 1 ? "una svolta" : nm("svolta") + " svolte"}. Da chi o da che cosa è partita?`);
+    if (nm("ia")) out.push("L'intelligenza artificiale vi ha sorpreso. In che cosa vi ha aiutato, e in che cosa vi ha portato fuori strada?");
+    if (nm("strada")) out.push("A un certo punto avete cambiato strada. Chi se n'è accorto per primo?");
+  }
+  return out;
+}
+const SPUNTI_FISSI = [
+  "Che cosa vi ha aiutato a lavorare insieme? Che cosa vi ha frenato?",
+  "Che cosa ha fatto l'intelligenza artificiale, e che cosa avete fatto voi?",
+  "C'è qualcosa del vostro modo di lavorare che è finito, senza volerlo, nella storia?"
+];
+function renderSpecchio() {
+  const tempi = S.carte.map(c => c.ms), mx = Math.max(...tempi, 1);
+  let h = `<h3>Il tempo su ogni carta</h3>`;
+  h += CARTE.map((c, i) => `<div class="barra-t" style="--c:${colore(c)}"><span class="nm">${esc(c.nome)}</span>
+      <span class="bb" style="width:${Math.max(2, tempi[i] / mx * 55).toFixed(1)}%"></span><span class="vv">${tempi[i] ? fmtMin(tempi[i]) : "—"}</span></div>`).join("");
+  const dec = DECISIONI.map(d => ({ d, n: S.carte.filter(c => c.dec === d.id).length })).filter(x => x.n);
+  if (dec.length) h += `<h3>Come avete deciso</h3><p>${dec.map(x => `${x.d.em} ${esc(x.d.t)}: <b>${x.n}</b>`).join("<br>")}</p>`;
+  h += `<h3>Domande per parlarne</h3>`;
+  h = `<label class="interr"><input type="checkbox" ${impConduttore().prompt ? "checked" : ""} onchange="cambiaPrompt(this.checked)">
+       Mostra ai gruppi il pulsante di emergenza «Prompt automatico» (vale per questo tablet)</label>` + h;
+  h += spunti().map(t => `<div class="spunto">${esc(t)}</div>`).join("");
+  h += SPUNTI_FISSI.map(t => `<div class="spunto fisso">${esc(t)}</div>`).join("");
+  $("specchioVista").innerHTML = h;
+}
+
+
+/* ============================================================
+   AVVIO
+   ============================================================ */
+mostra("s-intro");
+</script>
+</body>
+</html>
