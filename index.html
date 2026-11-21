@@ -149,6 +149,7 @@ input[type=text]:focus,textarea:focus{outline:none;border-color:var(--blu)}
 #testoPrompt{height:260px;font-size:14px;margin:8px 0}
 .interr{display:flex;align-items:center;gap:10px;background:#fff;border:2px solid #e0d6c2;border-radius:12px;padding:10px 14px;margin:6px 0 14px;font-size:16px}
 .interr input{width:24px;height:24px}
+.arch-voce{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px;background:#fff;border:2px solid #e0d6c2;border-radius:12px;padding:10px 14px;margin:6px 0}
 .foglietto.stella{box-shadow:0 0 0 3px var(--arancio),0 4px 8px rgba(0,0,0,.13)}
 .foglietto .tx{flex:1;word-wrap:break-word}
 .fog-bot{display:flex;justify-content:flex-end;gap:2px;margin-top:6px}
@@ -204,6 +205,9 @@ input[type=text]:focus,textarea:focus{outline:none;border-color:var(--blu)}
 #crediti{display:block;margin:36px auto 14px;background:none;border:none;padding:6px 10px;
   font-size:11px;letter-spacing:.04em;color:var(--tenue);opacity:.55}
 
+/* ---------- test (solo copia di lavoro) ---------- */
+.test-box{max-width:560px;margin:30px auto 0;border:2px dashed #b44;border-radius:12px;padding:12px;font-size:15px;color:#b44;text-align:left}
+.test-box select{font-size:16px;padding:6px;margin:6px 0}
 
 @media (max-width:600px){
   .sch-col{grid-template-columns:1fr}
@@ -237,6 +241,7 @@ input[type=text]:focus,textarea:focus{outline:none;border-color:var(--blu)}
   <b>Parlatevi prima di scrivere: la storia è di tutti.</b></p>
   <div class="avvertenza"><b>Prima di cominciare.</b> Quello che scrivete potrà finire in un'intelligenza artificiale. Non usate nomi veri, nomi di aziende o dati personali. Parlate di situazioni, non di persone: nella storia userete nomi di fantasia.</div>
   <div id="introBottoni"></div>
+  
 </div>
 
 <!-- ====================== PREPARAZIONE ====================== -->
@@ -290,6 +295,7 @@ input[type=text]:focus,textarea:focus{outline:none;border-color:var(--blu)}
 <div class="schermata nascosto" id="s-scheda">
   <h1>La vostra scheda</h1>
   <p class="no-stampa">Questa è la vostra storia in pezzi. Ora sta a voi raccontarla con l'intelligenza artificiale: decidete voi come.</p>
+  <p class="piccolo no-stampa" id="avvisoArch">Quello che avete scritto viene conservato in modo riservato da chi conduce il laboratorio, per poterlo riprendere insieme.</p>
   <div class="no-stampa" style="margin:6px 0 14px">
     <button class="bott pieno" onclick="copiaScheda()">Copia il testo</button>
     <button class="bott" onclick="salvaScheda()">Salva file</button>
@@ -488,7 +494,7 @@ let S = carica() || nuovoStato();
 /* compatibilità con salvataggi precedenti */
 if (!Array.isArray(S.taccuino)) S.taccuino = [];
 if (typeof S.passo !== "number") { let k = 0; while (k < 8 && S.carte[k].fatta) k++; S.passo = k; }
-function salva() { try { localStorage.setItem(CHIAVE, JSON.stringify(S)); } catch(e) {} }
+function salva() { try { localStorage.setItem(CHIAVE, JSON.stringify(S)); } catch(e) {} archiviaPresto(); }
 function haIniziato() { return !!(S.eroe || S.amb || S.carte.some(c => c.a.length || c.b.length)); }
 
 /* ============================================================
@@ -538,13 +544,14 @@ function mostra(id) {
   $("btTacc").classList.toggle("nascosto", id === "s-specchio");
   $("crediti").classList.toggle("nascosto", id !== "s-intro" && id !== "s-scheda");   // firma solo all'inizio e nella scheda finale
   aggTacc();
+  if (id === "s-scheda" && !S.arrivatiScheda) S.arrivatiScheda = Date.now();
   if (id !== "s-intro" && id !== "s-specchio") { S.schermata = id; salva(); }
   window.scrollTo(0, 0);
   if (id === "s-intro") renderIntro();
   if (id === "s-prep") renderPrep();
   if (id === "s-tavolo") renderTavolo();
   if (id === "s-forma") renderForma();
-  if (id === "s-scheda") { renderScheda(); renderDiario(); }
+  if (id === "s-scheda") { renderScheda(); renderDiario(); $("avvisoArch").classList.toggle("nascosto", !impConduttore().archivio); }
   if (id === "s-specchio") renderSpecchio();
 }
 
@@ -571,6 +578,7 @@ function chiediRicomincia() {
     <button class="bott arancio" onclick="ricomincia()">Sì, ricominciamo</button>`);
 }
 function ricomincia() {
+  if (archTimer) archivia();
   cartaAperta = -1;
   S = nuovoStato(); salva(); chiudiPopup(); mostra("s-prep");
 }
@@ -960,9 +968,12 @@ function renderScheda() {
 /* ---------- prompt automatico (pulsante di emergenza, facoltativo) ---------- */
 const CHIAVE_COND = "viaggioEroe-conduttore";
 function impConduttore() {
-  try { const o = JSON.parse(localStorage.getItem(CHIAVE_COND) || "{}"); return { prompt: o.prompt !== false }; } catch(e) { return { prompt:true }; }
+  let o = {}; try { o = JSON.parse(localStorage.getItem(CHIAVE_COND) || "{}") || {}; } catch(e) {}
+  return { prompt: o.prompt !== false, archivio: o.archivio === undefined ? ARCH_PREDEFINITO : !!o.archivio };
 }
-function cambiaPrompt(v) { try { localStorage.setItem(CHIAVE_COND, JSON.stringify({ prompt: !!v })); } catch(e) {} toast(v ? "Pulsante visibile ai gruppi" : "Pulsante nascosto ai gruppi"); }
+function scriviImp(k, v) { const o = impConduttore(); o[k] = !!v; try { localStorage.setItem(CHIAVE_COND, JSON.stringify(o)); } catch(e) {} }
+function cambiaPrompt(v) { scriviImp("prompt", v); toast(v ? "Pulsante visibile ai gruppi" : "Pulsante nascosto ai gruppi"); }
+function cambiaArchivio(v) { scriviImp("archivio", v); toast(v ? "Archivio acceso" : "Archivio spento"); if (v) archiviaPresto(); renderSpecchio(); }
 function testoPrompt() {
   const F = voceForma(FORMATI, "formato"), P = voceForma(PER, "per"), T = voceForma(TONI, "tono");
   const f = S.forma.formato;
@@ -1149,8 +1160,173 @@ function renderSpecchio() {
        Mostra ai gruppi il pulsante di emergenza «Prompt automatico» (vale per questo tablet)</label>` + h;
   h += spunti().map(t => `<div class="spunto">${esc(t)}</div>`).join("");
   h += SPUNTI_FISSI.map(t => `<div class="spunto fisso">${esc(t)}</div>`).join("");
+  h += htmlArchivio();
   $("specchioVista").innerHTML = h;
 }
+
+/* ============================================================
+   ARCHIVIO DI QUESTO TABLET (per chi conduce)
+   Dal momento in cui il gruppo arriva alla scheda finale, Specchio e scheda
+   vengono copiati in un archivio sul tablet, aggiornato a ogni modifica.
+   «Nuovo gruppo» non lo cancella. Si consulta e si scarica dallo Specchio.
+   ============================================================ */
+const CHIAVE_ARCH = "viaggioEroe-archivio";
+/* copia online: progetto Supabase «Escape 2.0», tabella chiusa viaggi_eroe, si legge solo da conduttore.html */
+const ONLINE_URL = "https://vozzdhpwiauchvznfvsi.supabase.co/rest/v1/rpc/viaggio_eroe_salva";
+const ONLINE_KEY = "sb_publishable_aLZfS_idBIXD1mEixlnGsA_FF70VGni";
+var ARCH_PREDEFINITO = true;
+var archTimer = null, onlineEsito = "", onlineOra = 0;
+
+function idSessione() {
+  if (!S.sessione) S.sessione = Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 10);
+  return S.sessione;
+}
+function leggiArchivio() {
+  try { const a = JSON.parse(localStorage.getItem(CHIAVE_ARCH) || "[]"); return Array.isArray(a) ? a : []; } catch(e) { return []; }
+}
+function scriviArchivio(a) {
+  try { localStorage.setItem(CHIAVE_ARCH, JSON.stringify(a)); return true; }
+  catch(e) { toast("Memoria del tablet piena: scaricate l'archivio ed eliminate i gruppi vecchi", 5000); return false; }
+}
+function archiviaPresto() {
+  if (!S.arrivatiScheda || !impConduttore().archivio) return;
+  clearTimeout(archTimer); archTimer = setTimeout(archivia, 1500);
+}
+function archivia() {
+  clearTimeout(archTimer); archTimer = null;
+  if (!S.arrivatiScheda || !impConduttore().archivio) return;
+  const a = leggiArchivio(), id = idSessione();
+  try { localStorage.setItem(CHIAVE, JSON.stringify(S)); } catch(e) {}
+  const voce = { sessione: id, gruppo: S.gruppo.trim(), inizio: S.creato, aggiornato: Date.now(),
+                 specchio: testoSpecchio(), scheda: testoScheda() };
+  const k = a.findIndex(x => x.sessione === id);
+  if (k >= 0) a[k] = voce; else a.push(voce);
+  scriviArchivio(a);
+  inviaOnline(voce);
+}
+async function inviaOnline(voce) {
+  const corpo = JSON.stringify({ p_sessione: voce.sessione, p_gruppo: voce.gruppo, p_inizio: new Date(voce.inizio).toISOString(),
+    p_specchio: voce.specchio, p_scheda: voce.scheda, p_dati: S });
+  try {
+    const r = await fetch(ONLINE_URL, { method: "POST", keepalive: corpo.length < 60000,
+      headers: { "apikey": ONLINE_KEY, "Content-Type": "application/json" }, body: corpo });
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    onlineEsito = "ok"; onlineOra = Date.now();
+  } catch(e) { onlineEsito = "errore"; }
+  if (!$("s-specchio").classList.contains("nascosto")) renderSpecchio();
+}
+function dataOra(ts) {
+  const d = new Date(ts);
+  return String(d.getDate()).padStart(2,"0") + "/" + String(d.getMonth()+1).padStart(2,"0") + "/" + d.getFullYear() + " alle " + ora(ts);
+}
+function archivioOrdinato() {
+  return leggiArchivio().sort((x, y) => x.inizio - y.inizio).map((v, i) => ({ ...v, n: i + 1 }));
+}
+function nomeArch(v) { return v.gruppo || "Gruppo senza nome"; }
+function testoArch(v) {
+  return "GRUPPO N. " + v.n + " — " + nomeArch(v) + "\nIniziato il " + dataOra(v.inizio) + " · ultimo aggiornamento il " + dataOra(v.aggiornato) +
+         "\n\n" + v.specchio + "\n\n" + "-".repeat(40) + "\nLA SCHEDA DEL GRUPPO\n\n" + v.scheda + "\n";
+}
+function htmlArchivio() {
+  const a = archivioOrdinato();
+  let h = `<h3>Archivio di questo tablet</h3>
+    <label class="interr"><input type="checkbox" ${impConduttore().archivio ? "checked" : ""} onchange="cambiaArchivio(this.checked)">
+    Conserva Specchio e scheda di ogni gruppo (sul tablet e, con internet, nell'archivio online dei conduttori)</label>
+    <p class="piccolo">${!impConduttore().archivio ? "Archivio spento: il lavoro dei gruppi non viene conservato."
+      : S.arrivatiScheda ? "Questo gruppo è nell'archivio e si aggiorna da solo a ogni modifica."
+      : "Questo gruppo entrerà nell'archivio quando arriverà alla scheda finale."}
+      ${impConduttore().archivio && S.arrivatiScheda ? (onlineEsito === "ok" ? "Copia online salvata alle " + ora(onlineOra) + "."
+        : onlineEsito === "errore" ? "Copia online non riuscita (manca internet?): il gruppo è comunque nell'archivio del tablet. <button class='bott' onclick='archivia()'>Riprova</button>"
+        : "") : ""}
+      «Nuovo gruppo» non cancella l'archivio. Scaricatelo dopo ogni laboratorio: se si cancellano i dati del browser o dell'app, si perde.</p>`;
+  if (!a.length) return h + `<p class="piccolo">Nessun gruppo nell'archivio.</p>`;
+  h += `<p><button class="bott pieno" onclick="scaricaArchivio()">Scarica tutti (${a.length})</button>
+        <button class="bott" onclick="copiaTesto(a_tutti())">Copia tutti</button></p>`;
+  h += a.slice().reverse().map(v => `<div class="arch-voce"><div><b>${v.n}. ${esc(nomeArch(v))}</b><br>
+      <span class="piccolo">iniziato il ${dataOra(v.inizio)} · aggiornato il ${dataOra(v.aggiornato)}</span></div>
+      <div><button class="bott" onclick="vediArch('${v.sessione}')">Vedi</button>
+      <button class="bott" onclick="scaricaArch('${v.sessione}')" aria-label="Scarica">💾</button></div></div>`).join("");
+  return h;
+}
+function a_tutti() { return archivioOrdinato().map(testoArch).join("\n" + "=".repeat(60) + "\n\n"); }
+function trovaArch(id) { return archivioOrdinato().find(v => v.sessione === id); }
+function vediArch(id) {
+  const v = trovaArch(id); if (!v) return;
+  mostraPopup(`<h2>${v.n}. ${esc(nomeArch(v))}</h2>
+    <p class="piccolo">Iniziato il ${dataOra(v.inizio)} · aggiornato il ${dataOra(v.aggiornato)}</p>
+    <textarea id="testoArch" readonly style="height:300px">${esc(testoArch(v))}</textarea>
+    <p><button class="bott pieno" onclick="scaricaArch('${id}')">💾 Scarica</button>
+    <button class="bott" onclick="copiaTesto(testoArch(trovaArch('${id}')))">Copia</button>
+    <button class="bott" onclick="chiudiPopup()">Chiudi</button></p>
+    <p style="margin-top:14px"><button class="bott rosso" onclick="eliminaArch('${id}')">Elimina dall'archivio</button></p>`);
+}
+function eliminaArch(id) {
+  const v = trovaArch(id); if (!v) return;
+  mostraPopup(`<h2>Eliminare «${esc(nomeArch(v))}»?</h2>
+    <p>Il gruppo n. ${v.n} sarà cancellato dall'archivio di questo tablet. Se vi serve, prima scaricatelo.</p>
+    <button class="bott" onclick="vediArch('${id}')">Annulla</button>
+    <button class="bott arancio" onclick="confermaElimina('${id}')">Sì, elimina</button>`);
+}
+function confermaElimina(id) {
+  scriviArchivio(leggiArchivio().filter(v => v.sessione !== id));
+  if (id === S.sessione) { S.arrivatiScheda = 0; salva(); }   // il gruppo in corso non rientra da solo
+  chiudiPopup(); toast("Gruppo eliminato dall'archivio"); renderSpecchio();
+}
+function nomeFileArch(v) {
+  const slug = nomeArch(v).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  return "viaggio-eroe-" + v.n + "-" + (slug || "gruppo") + ".txt";
+}
+function scaricaArch(id) { const v = trovaArch(id); if (v) scaricaTesto(testoArch(v), nomeFileArch(v)); }
+function scaricaArchivio() {
+  const d = new Date();
+  scaricaTesto(a_tutti(), "viaggio-eroe-archivio-" + d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0") + ".txt");
+}
+/* salvataggio a tre livelli: file, appunti, riquadro da copiare a mano */
+function scaricaTesto(testo, nome) {
+  try {
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([testo], { type: "text/plain;charset=utf-8" }));
+    a.download = nome; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+    toast("Se il file non compare, usate «Copia»");
+  } catch(e) { copiaTesto(testo); }
+}
+function copiaTesto(testo) {
+  const ripiego = () => mostraPopup(`<h2>Copiate a mano</h2>
+    <p class="piccolo">Tenete premuto nel riquadro, scegliete «Seleziona tutto» e poi «Copia».</p>
+    <textarea id="testoRipiego" readonly style="height:300px">${esc(testo)}</textarea>
+    <p><button class="bott" onclick="chiudiPopup()">Chiudi</button></p>`);
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(testo).then(() => toast("Testo copiato"), ripiego);
+  else ripiego();
+}
+function testoSpecchio() {
+  const r = [];
+  r.push("SPECCHIO DEL VIAGGIO");
+  r.push("Gruppo: " + (S.gruppo.trim() || "senza nome") + " · iniziato il " + dataOra(S.creato) +
+         (S.arrivatiScheda ? " · arrivato alla scheda alle " + ora(S.arrivatiScheda) : ""));
+  r.push("Tempo complessivo sulle carte: " + fmtMin(S.carte.reduce((s, c) => s + c.ms, 0)));
+  r.push("");
+  r.push("CARTA PER CARTA");
+  CARTE.forEach((c, i) => {
+    const st = S.carte[i], dec = trova(DECISIONI, st.dec), note = [];
+    if (dec) note.push("decisione: " + dec.t.toLowerCase());
+    if (st.lant) note.push(st.lant >= 2 ? "lanterna accesa due volte" : "lanterna accesa");
+    if (st.anticipata) note.push("aperta in anticipo");
+    if (st.riaperta) note.push("riaperta " + st.riaperta + (st.riaperta === 1 ? " volta" : " volte"));
+    if (!st.fatta) note.push("non completata");
+    r.push("- " + c.nome + ": " + (st.ms ? fmtMin(st.ms) : "—") + (note.length ? " (" + note.join(", ") + ")" : ""));
+  });
+  const dec = DECISIONI.map(x => ({ x, n: S.carte.filter(c => c.dec === x.id).length })).filter(o => o.n);
+  if (dec.length) { r.push(""); r.push("COME HANNO DECISO"); dec.forEach(o => r.push("- " + o.x.t + ": " + o.n)); }
+  r.push("");
+  r.push("Prompt automatico: " + (S.promptAperto ? "aperto alle " + ora(S.promptAperto) : "non usato"));
+  r.push("");
+  r.push("DOMANDE PER PARLARNE");
+  spunti().forEach(t => r.push("- " + t));
+  SPUNTI_FISSI.forEach(t => r.push("- " + t));
+  return r.join("\n");
+}
+document.addEventListener("visibilitychange", () => { if (document.hidden && archTimer) archivia(); });
 
 
 /* ============================================================

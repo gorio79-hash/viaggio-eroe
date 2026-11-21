@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>Il Viaggio dell'Eroe — Conduttori</title>
+<style>
+  :root{--carta:#F7EFDD;--inchiostro:#2F2A24;--blu:#4E6EA8;--blu-sc:#34507F;--arancio:#C8742A;--grigio:#6B6258;--riga:#D8CBB2;--rosso:#C0392B}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--carta);color:var(--inchiostro);font-family:Georgia,"Times New Roman",serif;font-size:17px;line-height:1.45}
+  .fascia{background:var(--blu-sc);color:#fff;padding:14px 18px}
+  .fascia .tag{font-size:13px;letter-spacing:.08em;text-transform:uppercase;opacity:.8}
+  .fascia h1{margin:2px 0 0;font-size:26px}
+  .pagina{max-width:860px;margin:0 auto;padding:18px 18px 60px}
+  .sotto{color:var(--grigio);font-style:italic;margin:0 0 14px}
+  .piccolo{font-size:14px;color:var(--grigio)}
+  .bott{font:inherit;font-size:16px;padding:9px 16px;border-radius:10px;border:2px solid var(--blu-sc);background:#fff;color:var(--blu-sc);cursor:pointer;margin:3px 4px 3px 0}
+  .bott.pieno{background:var(--blu-sc);color:#fff}
+  .bott.rosso{border-color:var(--rosso);color:var(--rosso)}
+  input[type=password],input[type=text]{font:inherit;padding:10px 12px;border-radius:10px;border:2px solid var(--riga);width:100%;max-width:360px;background:#fff}
+  .riquadro{background:#fff;border:2px solid var(--riga);border-radius:14px;padding:16px;margin:14px 0}
+  .voce{display:flex;flex-wrap:wrap;align-items:center;gap:8px;border-bottom:1px solid var(--riga);padding:10px 0}
+  .voce:last-child{border-bottom:0}
+  .voce .info{flex:1 1 260px}
+  .voce .num{display:inline-block;min-width:34px;font-weight:bold;color:var(--arancio)}
+  h2{color:var(--blu-sc)} h3{color:var(--arancio);margin-bottom:4px}
+  .testo{white-space:pre-wrap;font-size:15px;background:#fffdf7;border:1px solid var(--riga);border-radius:10px;padding:12px;margin:8px 0 16px}
+  textarea{width:100%;height:180px;font:inherit;font-size:14px;border-radius:10px;border:2px solid var(--riga);padding:10px}
+  .nascosto{display:none!important}
+  .errore{color:var(--rosso)}
+  #toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--blu-sc);color:#fff;padding:10px 18px;border-radius:12px;font-size:15px;max-width:90%}
+</style>
+</head>
+<body>
+<div class="fascia"><div class="tag">Per chi conduce</div><h1>Il Viaggio dell'Eroe</h1></div>
+<div class="pagina">
+  <p class="sotto">Archivio dei gruppi: Specchio del viaggio e scheda di ciascuno</p>
+
+  <div id="accesso" class="riquadro">
+    <p>Pagina riservata a chi conduce il laboratorio. La parola d'accesso è la stessa dei conduttori del Castello.</p>
+    <form onsubmit="entra(event)">
+      <input type="password" id="parola" placeholder="Parola d'accesso" autocomplete="current-password">
+      <div style="margin-top:10px"><button class="bott pieno" type="submit">Entra</button></div>
+    </form>
+    <p id="msgAccesso" class="errore"></p>
+  </div>
+
+  <div id="archivio" class="nascosto">
+    <div>
+      <button class="bott" onclick="carica()">Aggiorna</button>
+      <button class="bott" onclick="scaricaTutti()">Scarica tutti</button>
+      <button class="bott" onclick="copiaTutti()">Copia tutti</button>
+      <button class="bott" onclick="esci()">Esci</button>
+    </div>
+    <div style="margin-top:10px"><input type="text" id="filtro" placeholder="Cerca per nome del gruppo" oninput="disegna()"></div>
+    <p id="stato" class="piccolo"></p>
+    <div id="elenco" class="riquadro"></div>
+    <div id="ripiego" class="riquadro nascosto">
+      <p class="piccolo">Il salvataggio e la copia automatica non sono riusciti. Tenete premuto nel riquadro, scegliete «Seleziona tutto» e poi «Copia».</p>
+      <textarea id="ripiegoTesto" readonly></textarea>
+      <button class="bott" onclick="$('ripiego').classList.add('nascosto')">Chiudi</button>
+    </div>
+  </div>
+
+  <div id="dettaglio" class="nascosto">
+    <button class="bott" onclick="chiudiDettaglio()">← Torna all'elenco</button>
+    <div id="dettaglioVista"></div>
+  </div>
+</div>
+
+<script>
+/* Archivio su Supabase (progetto «Escape 2.0», tabella viaggi_eroe).
+   La tabella è chiusa: la parola d'accesso viene controllata da Supabase
+   (funzione viaggio_eroe_leggi), non da questa pagina. */
+const BASE = "https://vozzdhpwiauchvznfvsi.supabase.co/rest/v1/rpc/";
+const KEY = "sb_publishable_aLZfS_idBIXD1mEixlnGsA_FF70VGni";
+const CHIAVE_SESS = "viaggioEroe-accessoConduttori";
+const $ = id => document.getElementById(id);
+let righe = [], aperta = null;
+
+function esc(t) { return String(t ?? "").replace(/[&<>"']/g, m => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m])); }
+function normalizza(p) { return String(p || "").trim().toLowerCase().replace(/\s+/g, ""); }
+function due(n) { return String(n).padStart(2, "0"); }
+function dataOra(iso) { const d = new Date(iso); return isNaN(d) ? "—" : `${due(d.getDate())}/${due(d.getMonth()+1)}/${d.getFullYear()} alle ${due(d.getHours())}:${due(d.getMinutes())}`; }
+function toast(t) { let d = $("toast"); if (d) d.remove(); d = document.createElement("div"); d.id = "toast"; d.textContent = t; document.body.appendChild(d); setTimeout(() => d.remove(), 2600); }
+
+async function chiama(fn, corpo) {
+  const r = await fetch(BASE + fn, { method: "POST", headers: { "apikey": KEY, "Content-Type": "application/json" }, body: JSON.stringify(corpo) });
+  const testo = await r.text();
+  if (!r.ok) { const e = new Error(testo); e.status = r.status; throw e; }
+  return testo ? JSON.parse(testo) : null;
+}
+async function entra(ev) {
+  if (ev) ev.preventDefault();
+  const p = normalizza($("parola").value);
+  if (!p) return;
+  $("msgAccesso").textContent = "Controllo in corso…";
+  try {
+    righe = await chiama("viaggio_eroe_leggi", { p_parola: p }) || [];
+    sessionStorage.setItem(CHIAVE_SESS, p);
+    $("msgAccesso").textContent = "";
+    $("accesso").classList.add("nascosto"); $("archivio").classList.remove("nascosto");
+    disegna();
+  } catch(e) {
+    $("msgAccesso").textContent = (e.message || "").includes("parola")
+      ? "Parola d'accesso non corretta."
+      : "Impossibile leggere l'archivio. Controllate la connessione a internet. Se il problema resta, il progetto Supabase potrebbe essere in pausa: riattivatelo dal pannello.";
+  }
+}
+async function carica() {
+  const p = sessionStorage.getItem(CHIAVE_SESS);
+  if (!p) return esci();
+  $("stato").textContent = "Aggiornamento…";
+  try { righe = await chiama("viaggio_eroe_leggi", { p_parola: p }) || []; disegna(); }
+  catch(e) { $("stato").textContent = "Impossibile leggere l'archivio. Controllate la connessione."; }
+}
+function esci() {
+  sessionStorage.removeItem(CHIAVE_SESS); righe = [];
+  $("archivio").classList.add("nascosto"); $("dettaglio").classList.add("nascosto"); $("accesso").classList.remove("nascosto");
+  $("parola").value = "";
+}
+
+/* in ordine cronologico: il più vecchio è il n. 1, così il numero resta stabile */
+function ordinate() { return righe.slice().sort((a, b) => new Date(a.inizio) - new Date(b.inizio)).map((r, i) => ({ ...r, n: i + 1 })); }
+function nomeGruppo(r) { return (r.gruppo || "").trim() || "Gruppo senza nome"; }
+function testoDi(r) {
+  return `GRUPPO N. ${r.n} — ${nomeGruppo(r)}\nIniziato il ${dataOra(r.inizio)} · ultimo aggiornamento il ${dataOra(r.aggiornato_il)}\n\n${r.specchio || ""}\n\n${"-".repeat(40)}\nLA SCHEDA DEL GRUPPO\n\n${r.scheda || ""}\n`;
+}
+function disegna() {
+  const f = normalizza($("filtro").value), tutte = ordinate();
+  const vis = tutte.filter(r => !f || normalizza(r.gruppo).includes(f));
+  $("stato").textContent = tutte.length
+    ? `${tutte.length} ${tutte.length === 1 ? "gruppo salvato" : "gruppi salvati"}${f ? ` · ${vis.length} trovati` : ""}. Il più recente è in cima.`
+    : "Nessun gruppo nell'archivio.";
+  $("elenco").innerHTML = vis.length ? vis.reverse().map(r => `<div class="voce">
+      <div class="info"><span class="num">${r.n}.</span><b>${esc(nomeGruppo(r))}</b><br>
+        <span class="piccolo">iniziato il ${dataOra(r.inizio)} · aggiornato il ${dataOra(r.aggiornato_il)}</span></div>
+      <button class="bott pieno" onclick="vedi('${esc(r.sessione)}')">Vedi</button>
+      <button class="bott" onclick="scaricaUno('${esc(r.sessione)}')" aria-label="Scarica">💾</button>
+    </div>`).join("") : `<p class="piccolo">Nessun gruppo da mostrare.</p>`;
+}
+function trovaRiga(id) { return ordinate().find(r => r.sessione === id); }
+function vedi(id) {
+  const r = trovaRiga(id); if (!r) return; aperta = r;
+  $("archivio").classList.add("nascosto"); $("dettaglio").classList.remove("nascosto");
+  $("dettaglioVista").innerHTML = `<h2>${r.n}. ${esc(nomeGruppo(r))}</h2>
+    <p class="piccolo">Iniziato il ${dataOra(r.inizio)} · ultimo aggiornamento il ${dataOra(r.aggiornato_il)}</p>
+    <button class="bott pieno" onclick="scaricaUno('${esc(r.sessione)}')">💾 Scarica</button>
+    <button class="bott" onclick="copia(testoDi(aperta))">Copia</button>
+    <h3>Specchio del viaggio</h3><div class="testo">${esc(r.specchio)}</div>
+    <h3>La scheda del gruppo</h3><div class="testo">${esc(r.scheda)}</div>
+    <p class="piccolo">Per cancellare questo gruppo dall'archivio (per esempio una prova):</p>
+    <button class="bott rosso" onclick="elimina('${esc(r.sessione)}')">Elimina dall'archivio</button>`;
+  window.scrollTo(0, 0);
+}
+function chiudiDettaglio() { aperta = null; $("dettaglio").classList.add("nascosto"); $("archivio").classList.remove("nascosto"); disegna(); }
+async function elimina(id) {
+  const r = trovaRiga(id); if (!r) return;
+  if (!confirm(`Eliminare definitivamente «${nomeGruppo(r)}» (n. ${r.n}) dall'archivio online?`)) return;
+  try {
+    await chiama("viaggio_eroe_elimina", { p_parola: sessionStorage.getItem(CHIAVE_SESS), p_sessione: id });
+    righe = righe.filter(x => x.sessione !== id); chiudiDettaglio(); toast("Gruppo eliminato");
+  } catch(e) { toast("Eliminazione non riuscita"); }
+}
+
+/* salvataggio a tre livelli: file, appunti, riquadro da copiare a mano */
+function nomeFile(r) {
+  const slug = nomeGruppo(r).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  return `viaggio-eroe-${r.n}-${slug || "gruppo"}.txt`;
+}
+function scarica(testo, nome) {
+  try {
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([testo], { type: "text/plain;charset=utf-8" }));
+    a.download = nome; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+    toast("Se il file non compare, usate «Copia»");
+  } catch(e) { copia(testo); }
+}
+function copia(testo) {
+  const ripiego = () => { $("ripiegoTesto").value = testo; $("ripiego").classList.remove("nascosto");
+    if (!$("dettaglio").classList.contains("nascosto")) chiudiDettaglio();
+    const ta = $("ripiegoTesto"); ta.focus(); ta.select(); ta.scrollIntoView(); };
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(testo).then(() => toast("Testo copiato"), ripiego);
+  else ripiego();
+}
+function scaricaUno(id) { const r = trovaRiga(id); if (r) scarica(testoDi(r), nomeFile(r)); }
+function tuttiInsieme() { return ordinate().map(testoDi).join("\n" + "=".repeat(60) + "\n\n"); }
+function scaricaTutti() { if (!righe.length) return toast("L'archivio è vuoto"); const d = new Date(); scarica(tuttiInsieme(), `viaggio-eroe-archivio-${d.getFullYear()}-${due(d.getMonth()+1)}-${due(d.getDate())}.txt`); }
+function copiaTutti() { if (!righe.length) return toast("L'archivio è vuoto"); copia(tuttiInsieme()); }
+
+if (sessionStorage.getItem(CHIAVE_SESS)) { $("accesso").classList.add("nascosto"); $("archivio").classList.remove("nascosto"); carica(); }
+</script>
+</body>
+</html>
