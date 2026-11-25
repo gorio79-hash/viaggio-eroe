@@ -919,7 +919,7 @@ function voceForma(lista, k) {
 /* ============================================================
    SCHEDA
    ============================================================ */
-function testoScheda() {
+function testoScheda(conDomande) {
   const eroe = trova(EROI, S.eroe), F = voceForma(FORMATI, "formato"), P = voceForma(PER, "per"), T = voceForma(TONI, "tono");
   const r = [];
   r.push("IL VIAGGIO DELL'EROE — LA NOSTRA SCHEDA");
@@ -935,9 +935,9 @@ function testoScheda() {
     const st = S.carte[i];
     r.push("");
     r.push((i + 1) + ". " + c.nome.toUpperCase());
-    r.push("Cosa è successo davvero:");
+    r.push(conDomande ? "Cosa è successo davvero — «" + c.a + "»" : "Cosa è successo davvero:");
     if (st.a.length) st.a.forEach(n => r.push("- " + n.t)); else r.push("- (niente)");
-    r.push("Come lo racconta la storia:");
+    r.push(conDomande ? "Come lo racconta la storia — «" + domandaStoria(i) + "»" : "Come lo racconta la storia:");
     if (st.b.length) st.b.forEach(n => r.push("- " + n.t + (n.st ? " (!)" : ""))); else r.push("- (niente)");
   });
   if (S.taccuino.length) {
@@ -1013,7 +1013,8 @@ function chiediPrompt() {
     <button class="bott rosso" onclick="mostraPrompt()">Sì, prepara il prompt</button></p>`);
 }
 function mostraPrompt() {
-  if (!S.promptAperto) { S.promptAperto = Date.now(); salva(); }
+  if (!S.promptAperto) S.promptAperto = Date.now();
+  S.promptTesto = testoPrompt(); S.promptOra = Date.now(); salva();
   mostraPopup(`<h2>Prompt automatico</h2>
     <p class="piccolo">Copiatelo e incollatelo nella vostra IA. Leggete insieme quello che scrive: vi convince? Che cosa avreste chiesto voi di diverso?</p>
     <textarea id="testoPrompt" readonly></textarea>
@@ -1198,7 +1199,7 @@ function archivia() {
   const a = leggiArchivio(), id = idSessione();
   try { localStorage.setItem(CHIAVE, JSON.stringify(S)); } catch(e) {}
   const voce = { sessione: id, gruppo: S.gruppo.trim(), inizio: S.creato, aggiornato: Date.now(),
-                 specchio: testoSpecchio(), scheda: testoScheda() };
+                 specchio: testoSpecchio(), scheda: testoScheda(true) };
   const k = a.findIndex(x => x.sessione === id);
   if (k >= 0) a[k] = voce; else a.push(voce);
   scriviArchivio(a);
@@ -1324,6 +1325,14 @@ function testoSpecchio() {
   r.push("DOMANDE PER PARLARNE");
   spunti().forEach(t => r.push("- " + t));
   SPUNTI_FISSI.forEach(t => r.push("- " + t));
+  r.push("");
+  r.push("PROMPT AUTOMATICO");
+  if (S.promptTesto) {
+    r.push((S.promptRicostruito ? "Ricostruito dopo il laboratorio dai dati salvati (il gruppo l'ha aperto alle " + ora(S.promptAperto) + ")."
+                                : "Ultima versione mostrata al gruppo, alle " + ora(S.promptOra || S.promptAperto) + "."));
+    r.push("");
+    r.push(S.promptTesto);
+  } else r.push("Non usato.");
   return r.join("\n");
 }
 document.addEventListener("visibilitychange", () => { if (document.hidden && archTimer) archivia(); });
